@@ -4,6 +4,8 @@
 class SetFlashlightStateTask_t : public Task_t {
 protected:
 	bool _flash_light_state;
+
+	void _UpdateState(AdditionalData_t* additional_data) override;
 public:
 	SetFlashlightStateTask_t(bool state);
 
@@ -13,6 +15,7 @@ public:
 		bool _ended = false;
 
 		void SetOk();
+		friend SetFlashlightStateTask_t;
 	public:
 		Promise_t* OnDeliveryStatusChanged(on_dcs_callback_t on_dsc) { return static_cast<Promise_t*>(Task_t::Promise_t::OnDeliveryStatusChanged(on_dsc)); }
 		Promise_t* OnCancel(empty_callback_t on_cancel) { return static_cast<Promise_t*>(Task_t::Promise_t::OnCancel(on_cancel)); }

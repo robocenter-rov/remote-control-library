@@ -33,7 +33,7 @@ protected:
 	std::chrono::time_point<std::chrono::system_clock> _last_state_update_time;
 	std::chrono::time_point<std::chrono::system_clock> _last_request_send_time;
 
-	virtual void _UpdateState(AdditionalData_t* additional_data) {};
+	virtual void _UpdateState(AdditionalData_t* additional_data) {}
 public:
 	virtual ~Task_t() = default;
 	Task_t(TASK_ID task_id);
@@ -69,9 +69,12 @@ public:
 	int GetWorkerid() const;
 	void SetTag(unsigned int tag);
 	unsigned int GetTag() const;
-	PromisePtr_t GetPromise();
 	std::chrono::time_point<std::chrono::system_clock> GetLastStateUpdateTime() const;
 	std::chrono::time_point<std::chrono::system_clock> GetLastRequestSendTime() const;
 protected:
 	PromisePtr_t _promise;
+	template<class T>
+	std::shared_ptr<T> _GetPromise() {
+		return std::static_pointer_cast<T>(_promise ? _promise : _promise = std::make_shared<T>());
+	}
 };

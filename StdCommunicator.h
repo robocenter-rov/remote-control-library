@@ -4,7 +4,6 @@
 
 class StdCommunicator_t : public Communicator_t {
 private:
-	ConnectionProvider_t* _connection_provider;
 
 	enum SEND_MESSAGE_ID {
 		MSG_SET_MOTORS_THRUST = 1,
@@ -27,7 +26,6 @@ public:
 	StdCommunicator_t(ConnectionProvider_t* connection_provider);
 
 	void Begin() override;
-	void Stop() override;
 	void SendMotorsThrust(float motor1, float motor2, float motor3, float motor4, float motor5, float motor6) override;
 	void SendLocalMotorsForce(float move_x, float move_y, float move_z, float rotate_y, float rotate_z) override;
 	void SendFlashLightState(int workerId, unsigned tag, bool state) override;

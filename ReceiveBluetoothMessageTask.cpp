@@ -44,5 +44,5 @@ void ReceiveBluetoothMessageTask_t::SendCommand(Communicator_t* communicator, in
 }
 
 ReceiveBluetoothMessageTask_t::PromisePtr_t ReceiveBluetoothMessageTask_t::GetPromise() {
-	return std::static_pointer_cast<Promise_t>(Task_t::GetPromise());
+	return _GetPromise<Promise_t>();
 }

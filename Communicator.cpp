@@ -2,26 +2,47 @@
 
 const int BluetoothDataReadedAdditionalData_t::message_size;
 
-BluetoothDataReadedAdditionalData_t::BluetoothDataReadedAdditionalData_t(const char* message) {
+BluetoothDataReadedAdditionalData_t::BluetoothDataReadedAdditionalData_t(const uint8_t* message) {
 	memcpy(this->message, message, message_size);
 }
 
-I2CScanningDoneAdditionalData_t::I2CScanningDoneAdditionalData_t(const char* adresses, int count) {
+I2CScanningDoneAdditionalData_t::I2CScanningDoneAdditionalData_t(const uint8_t* adresses, int count) {
 	for (int i = 0; i < count; i++) {
 		this->adresses.push_back(adresses[i]);
 	}
 }
 
+WorkerState_t::WorkerState_t() {
+	worker_id = -1;
+	additional_data = nullptr;
+	task_tag = -1; // MAXUINT
+}
+
+Communicator_t::Communicator_t(ConnectionProvider_t* connection_provider) : _updating(false), _connection_provider(connection_provider) {}
+
 void Communicator_t::Begin() {
+	_connection_provider->Begin();
+
 	_updating_mutex.lock();
-	_updating = true;
+	if (!_updating) {
+		_updating = true;
+	}
 	_updating_mutex.unlock();
 }
 
 void Communicator_t::Stop() {
 	_updating_mutex.lock();
-	_updating = false;
+	bool updating = _updating;
 	_updating_mutex.unlock();
+	if (updating) {
+		_updating_mutex.lock();
+		_updating = false;
+		_updating_mutex.unlock();
+
+		_updater_thread.join();
+	}
+
+	_connection_provider->Stop();
 }
 
 void Communicator_t::SetOnWorkerStateReceive(std::function<void(WorkerState_t worker_state)> on_worker_state_receive) {

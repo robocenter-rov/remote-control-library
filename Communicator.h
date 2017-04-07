@@ -3,6 +3,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include "ConnectionProvider.h"
 
 enum TASK_STATUS {
 	TS_NONE,
@@ -35,12 +36,12 @@ struct BlinkFlashlightAdditionalData_t : AdditionalData_t {
 
 struct BluetoothDataReadedAdditionalData_t : AdditionalData_t {
 	static const int message_size = 7;
-	BluetoothDataReadedAdditionalData_t(const char* message);
+	BluetoothDataReadedAdditionalData_t(const uint8_t* message);
 	char message[message_size];
 };
 
 struct I2CScanningDoneAdditionalData_t : AdditionalData_t {
-	I2CScanningDoneAdditionalData_t(const char* adresses, int count);
+	I2CScanningDoneAdditionalData_t(const uint8_t* adresses, int count);
 	std::vector<char> adresses;
 };
 
@@ -59,6 +60,7 @@ struct WorkerState_t {
 	AdditionalData_t* additional_data;
 
 	WorkerState_t(int worker_id, WORKER_STATUS worker_status, TASK_ID task_id, unsigned int task_tag, TASK_STATUS task_status, AdditionalData_t* additional_data);
+	WorkerState_t();
 };
 
 class Communicator_t {
@@ -68,10 +70,13 @@ protected:
 	std::function<void()> _on_pong_receive;
 	std::function<void(float, float, float, float, float)> _on_sensor_data_receive;
 
-	std::thread* _updater_thread;
+	std::thread _updater_thread;
 	bool _updating;
 	std::mutex _updating_mutex;
+
+	ConnectionProvider_t* _connection_provider;
 public:
+	Communicator_t(ConnectionProvider_t* connection_provider);
 	virtual void Begin();
 	virtual void Stop();
 	virtual void SendMotorsThrust(float motor1, float motor2, float motor3, float motor4, float motor5, float motor6) = 0;

@@ -35,6 +35,7 @@ Task_t::Promise_t* Task_t::Promise_t::OnDeliveryStatusChanged(on_dcs_callback_t 
 	if (_delivery_command_state.status != DCS_NONE) {
 		on_dsc(_delivery_command_state);
 	}
+	_on_dsc = on_dsc;
 	return this;
 }
 
@@ -83,10 +84,6 @@ void Task_t::SetTag(unsigned int tag) {
 
 unsigned Task_t::GetTag() const {
 	return _task_tag;
-}
-
-Task_t::PromisePtr_t Task_t::GetPromise() {
-	return _promise ? _promise = std::make_shared<Promise_t>() : _promise;
 }
 
 std::chrono::time_point<std::chrono::system_clock> Task_t::GetLastStateUpdateTime() const {

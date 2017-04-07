@@ -39,5 +39,5 @@ void I2CScanTask_t::SendCommand(Communicator_t* communicator, int worker_id, uns
 }
 
 I2CScanTask_t::PromisePtr_t I2CScanTask_t::GetPromise() {
-	return std::static_pointer_cast<Promise_t>(Task_t::GetPromise());
+	return _GetPromise<Promise_t>();
 }
