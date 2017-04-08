@@ -166,6 +166,7 @@ private:
 	std::function<void(I2CDevices_t)> _on_i2c_devices_receive;
 	std::function<void(std::string)> _on_bluetooth_msg_receive;
 	std::function<void(Orientation_t)> _on_orientation_receive;
+	std::function<void(float)> _on_depth_receive;
 	std::function<void(RawSensorData_t)> _on_raw_sensor_data_receive;
 	std::function<void(CalibratedSensorData_t)> _on_calibrated_sensor_data_receive;
 	std::function<void(PidState_t, PidState_t, PidState_t)> _on_pid_state_receive;
@@ -205,6 +206,7 @@ public:
 	void OnI2CDevicesReceive(std::function<void(I2CDevices_t)> on_i2c_devices_receive);
 	void OnBluetoothMsgReceive(std::function<void(std::string)> on_bluetooth_msg_receive);
 	void OnOrientationReceive(std::function<void(Orientation_t)> on_orientation_receive);
+	void OnDepthReceive(std::function<void(float)> on_depth_receive);
 	void OnRawSensorDataReceive(std::function<void(RawSensorData_t)> on_raw_sensor_data_receive);
 	void OnCalibratedSensorDataReceive(std::function<void(CalibratedSensorData_t)> on_calibrated_sensor_data_receive);
 	void OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive);

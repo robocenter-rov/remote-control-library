@@ -5,7 +5,7 @@
 
 enum RECEIVE_BLOCK_IDS {
 	RBI_STATE = 0,
-	RBI_ORIENTATION = 1,
+	RBI_SENSOR_DATA = 1,
 	RBI_RAW_SENSOR_DATA = 2,
 	RBI_CALIBRATED_SENSOR_DATA = 3,
 	RBI_BLUETOOTH_MSG_RECEIVE = 4,
@@ -244,15 +244,20 @@ void SimpleCommunicator_t::_Update() {
 					_remote_pid_hash = dr.GetVar<uint32_t>();
 					break;
 
-				case RBI_ORIENTATION:
+				case RBI_SENSOR_DATA:
 					Orientation_t orientation;
 					orientation.q1 = dr.GetFloat();
 					orientation.q2 = dr.GetFloat();
 					orientation.q3 = dr.GetFloat();
 					orientation.q4 = dr.GetFloat();
+					float depth = dr.GetFloat();
 
 					if (_on_orientation_receive) {
 						_on_orientation_receive(orientation);
+					}
+
+					if (_on_depth_receive) {
+						_on_depth_receive(depth);
 					}
 				case RBI_RAW_SENSOR_DATA:
 					RawSensorData_t raw_sendor_data;
@@ -406,6 +411,10 @@ void SimpleCommunicator_t::OnBluetoothMsgReceive(std::function<void(std::string)
 
 void SimpleCommunicator_t::OnOrientationReceive(std::function<void(Orientation_t)> on_orientation_receive) {
 	_on_orientation_receive = on_orientation_receive;
+}
+
+void SimpleCommunicator_t::OnDepthReceive(std::function<void(float)> on_depth_receive) {
+	_on_depth_receive = on_depth_receive;
 }
 
 void SimpleCommunicator_t::OnRawSensorDataReceive(std::function<void(RawSensorData_t)> on_raw_sensor_data_receive) {

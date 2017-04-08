@@ -20,6 +20,7 @@ public:
 	virtual ConnectionProvider_t* WriteBool(bool val);
 	ConnectionProvider_t* WriteInt8(int8_t val);
 	virtual ConnectionProvider_t* WriteUInt8(uint8_t val) = 0;
+	ConnectionProvider_t* WriteInt16(int16_t val);
 	ConnectionProvider_t* WriteUInt16(uint16_t val);
 	ConnectionProvider_t* WriteUInt32(uint32_t val);
 	ConnectionProvider_t* WriteFloat(float val);
