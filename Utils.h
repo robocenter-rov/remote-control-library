@@ -36,16 +36,12 @@ inline uint32_t get_be_uint32(const void* buffer) {
 	return swap_endian(t);
 }
 
-inline int16_t float_to_int(float val) {
-	return constrain(val, -1.0f, 1.0f) * (INT16_MAX - 1);
+inline int16_t float_to_int16(float val, int16_t max) {
+	return constrain(val, -1.0f, 1.0f) * max;
 }
 
-inline float int_to_float(const int16_t val) {
-	return val / INT16_MAX;
-}
-
-inline float int_to_float(const void* buffer) {
-	return int_to_float(*static_cast<const int16_t*>(buffer));
+inline float int16_to_float(const int16_t val, int16_t max) {
+	return val * 1.0f / max;
 }
 
 template <typename T>

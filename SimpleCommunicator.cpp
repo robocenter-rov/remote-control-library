@@ -9,15 +9,16 @@ enum RECEIVE_BLOCK_IDS {
 	RBI_RAW_SENSOR_DATA = 2,
 	RBI_CALIBRATED_SENSOR_DATA = 3,
 	RBI_BLUETOOTH_MSG_RECEIVE = 4,
-	RBI_MOTORS_FORCE_RECEIVE = 5,
+	RBI_MOTORS_STATE_RECEIVE = 5,
 	RBI_PID_STATE_RECEIVE = 6,
 };
 
 enum SEND_BLOCK_IDS {
 	SBI_STATE = 0,
-	SBI_MOTORS_STATE = 1,
-	SBI_MOVEMENT = 2,
-	SBI_PID = 3,
+	SBI_DEVICES_STATE = 1,
+	SBI_MOTORS_STATE = 2,
+	SBI_MOVEMENT = 3,
+	SBI_PID = 4,
 };
 
 SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_provider) {
@@ -39,6 +40,11 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_movement_control_type = MCT_DIRECT;
 	_connected = false;
 	_pid_hash = 0;
+	_remote_pid_hash = 0;
+	_remote_packets_leak = 0;
+	_max_motor_force_val = 4095;
+	_camera1_pos = 0;
+	_camera2_pos = 0;
 }
 
 void SimpleCommunicator_t::Begin() {
@@ -57,6 +63,21 @@ inline void SimpleCommunicator_t::SetMotorsDirection(bool m1, bool m2, bool m3, 
 	_motors_directions.M4Dir = m4;
 	_motors_directions.M5Dir = m5;
 	_motors_directions.M6Dir = m6;
+}
+
+void SimpleCommunicator_t::SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2) {
+	_manipulator_state.ArmPos = arm_pos;
+	_manipulator_state.HandPos = hand_pos;
+	_manipulator_state.M1 = m1;
+	_manipulator_state.M2 = m2;
+}
+
+void SimpleCommunicator_t::SetCamera1Pos(float camera1) {
+	_camera1_pos = camera1;
+}
+
+void SimpleCommunicator_t::SetCamera2Pos(float camera2) {
+	_camera2_pos = camera2;
 }
 
 void SimpleCommunicator_t::SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6) {
@@ -186,10 +207,18 @@ void SimpleCommunicator_t::_Update() {
 		if (readed_bytes = _connection_provider->Receive()) {
 			auto dr = DataReader_t(_connection_provider->ReceiveBuffer(), readed_bytes);
 
-			int32_t msg_number = dr.GetUInt32();
+			uint32_t msg_number = dr.GetUInt32();
+			uint16_t remote_packets_leak = dr.GetUInt16();
 
 			if (msg_number < _last_received_msg_number && _on_robot_restart) {
 				_on_robot_restart();
+			} else {
+				int send_leak = remote_packets_leak - _remote_packets_leak;
+				int receive_leak = msg_number - _last_received_msg_number - 1;
+
+				if ((send_leak || receive_leak) && _on_packets_leak) {
+					_on_packets_leak(send_leak, receive_leak);
+				}
 			}
 
 			_last_received_msg_number = msg_number;
@@ -293,6 +322,11 @@ void SimpleCommunicator_t::_Update() {
 						_on_pid_state_receive(depth_pid, pitch_pid, yaw_pid);
 					}
 					break;
+				case RBI_MOTORS_STATE_RECEIVE:
+					MotorsState_t motors_state;
+
+					motors_state.M1Force = dr.GetInt16();
+				break;
 				default:;
 				}
 			}
@@ -302,18 +336,25 @@ void SimpleCommunicator_t::_Update() {
 			->WriteUInt32(_last_sended_msg_number)
 			->WriteUInt8(SBI_STATE)
 			->WriteVar(_current_remote_state)
-			->WriteUInt8(_last_i2c_scan);
+			->WriteUInt8(_last_i2c_scan)
+			->WriteInt8(SBI_DEVICES_STATE)
+			->WriteFloat(_manipulator_state.ArmPos)
+			->WriteFloat(_manipulator_state.HandPos)
+			->WriteFloat(_manipulator_state.M1)
+			->WriteFloat(_manipulator_state.M2)
+			->WriteFloat(_camera1_pos)
+			->WriteFloat(_camera2_pos);
 			
 		switch (_movement_control_type) {
 			case MCT_DIRECT: 
 				_connection_provider
 					->WriteUInt8(SBI_MOTORS_STATE)
-					->WriteUInt16(_motors_state.M1Force)
-					->WriteUInt16(_motors_state.M2Force)
-					->WriteUInt16(_motors_state.M3Force)
-					->WriteUInt16(_motors_state.M4Force)
-					->WriteUInt16(_motors_state.M5Force)
-					->WriteUInt16(_motors_state.M6Force);
+					->WriteFloat(_motors_state.M1Force)
+					->WriteFloat(_motors_state.M2Force)
+					->WriteFloat(_motors_state.M3Force)
+					->WriteFloat(_motors_state.M4Force)
+					->WriteFloat(_motors_state.M5Force)
+					->WriteFloat(_motors_state.M6Force);
 			break;
 			case MCT_VECTOR:
 				_connection_provider
@@ -373,4 +414,8 @@ void SimpleCommunicator_t::OnRawSensorDataReceive(std::function<void(RawSensorDa
 
 void SimpleCommunicator_t::OnCalibratedSensorDataReceive(std::function<void(CalibratedSensorData_t)> on_calibrated_sensor_data_receive) {
 	_on_calibrated_sensor_data_receive = on_calibrated_sensor_data_receive;
+}
+
+void SimpleCommunicator_t::OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive) {
+	_on_motors_state_receive = on_motors_state_receive;
 }

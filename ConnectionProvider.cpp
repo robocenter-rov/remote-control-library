@@ -17,6 +17,10 @@ ConnectionProvider_t* ConnectionProvider_t::WriteInt8(int8_t val) {
 	return WriteUInt8(static_cast<uint8_t>(val));
 }
 
+ConnectionProvider_t* ConnectionProvider_t::WriteInt16(int16_t val) {
+	return WriteUInt16(val);
+}
+
 ConnectionProvider_t* ConnectionProvider_t::WriteUInt16(uint16_t val) {
 	auto t = swap_endian(val);
 	return WriteVar(t);

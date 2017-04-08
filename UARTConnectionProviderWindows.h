@@ -3,6 +3,7 @@
 #include <string>
 #include <windows.h>
 #include "CircularBuffer.h"
+#include "RingBuffer.h"
 
 class CantOpenPortException_t : public ConnectionProviderException_t {
 	DWORD error_code;
@@ -45,7 +46,7 @@ protected:
 	size_t _send_head;
 	uint32_t _current_hash;
 
-	CircularBuffer_t _raw_receive_buffer;
+	RingBuffer_t _raw_receive_buffer;
 	size_t _received = 0;
 	bool _in_esc;
 

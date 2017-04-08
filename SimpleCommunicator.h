@@ -37,6 +37,13 @@ public:
 		float M6Force;
 	};
 
+	struct ManipulatorState_t {
+		float ArmPos;
+		float HandPos;
+		float M1;
+		float M2;
+	};
+
 	struct RawSensorData_t {
 		int Ax;
 		int Ay;
@@ -97,6 +104,10 @@ private:
 
 	MotorsState_t _motors_state;
 
+	ManipulatorState_t _manipulator_state;
+	float _camera1_pos;
+	float _camera2_pos;
+
 	struct {
 		float x_force;
 		float y_force;
@@ -134,9 +145,13 @@ private:
 	uint32_t _last_received_msg_number;
 	uint32_t _last_sended_msg_number;
 
+	uint32_t _remote_packets_leak;
+
 	std::chrono::system_clock::time_point _last_received_msg_time;
 
 	bool _connected;
+
+	int16_t _max_motor_force_val;
 
 	uint8_t _last_i2c_scan;
 	uint8_t _last_i2c_scan_remote;
@@ -154,6 +169,7 @@ private:
 	std::function<void(RawSensorData_t)> _on_raw_sensor_data_receive;
 	std::function<void(CalibratedSensorData_t)> _on_calibrated_sensor_data_receive;
 	std::function<void(PidState_t, PidState_t, PidState_t)> _on_pid_state_receive;
+	std::function<void(MotorsState_t)> _on_motors_state_receive;
 
 	void _UpdatePidHash();
 
@@ -164,6 +180,9 @@ public:
 	void Begin();
 	void Stop();
 	void SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6);
+	void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2);
+	void SetCamera1Pos(float camera1);
+	void SetCamera2Pos(float camera2);
 	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6);
 	void SetMovementForce(float x, float y);
 	void SetSinkingForce(float z);
@@ -188,4 +207,5 @@ public:
 	void OnOrientationReceive(std::function<void(Orientation_t)> on_orientation_receive);
 	void OnRawSensorDataReceive(std::function<void(RawSensorData_t)> on_raw_sensor_data_receive);
 	void OnCalibratedSensorDataReceive(std::function<void(CalibratedSensorData_t)> on_calibrated_sensor_data_receive);
+	void OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive);
 };
