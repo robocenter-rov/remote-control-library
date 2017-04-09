@@ -37,7 +37,7 @@ uint32_t DataReader_t::GetUInt32() {
 }
 
 float DataReader_t::GetFloat() {
-	return int_to_float(GetInt16());
+	return GetVar<float>();
 }
 
 const uint8_t* DataReader_t::GetBytes(size_t count) {

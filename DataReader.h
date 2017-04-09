@@ -26,10 +26,10 @@ public:
 	template<typename T>
 	T GetVar() {
 		CheckBuffSize(sizeof(T));
-		T res = *(reinterpret_cast<T*>(_buffer + _readed));
+		T res = *(reinterpret_cast<const T*>(_buffer + _readed));
 		_readed += sizeof(T);
 		return res;
-	};
+	}
 
 	int Readed() const;
 	int Available() const;

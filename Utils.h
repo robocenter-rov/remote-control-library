@@ -1,12 +1,8 @@
 #pragma once
 
 #include <algorithm>
-#include <codecvt>
 
-template<typename T>
-inline T constrain(T val, T min, T max) {
-	return std::max(std::min(val, max), min);
-}
+#define constrain(val, min, max) (val) > (max) ? (max) : (val) < (min) ? (min) : (val)
 
 inline uint16_t swap_endian(const uint16_t val) {
 	//return val >> 8 | val << 8 & 0xFF00;
@@ -53,9 +49,9 @@ inline uint32_t HashLy(uint8_t byte, uint32_t hash) {
 	return (hash * 1664525) + byte + 1013904223;
 }
 
-inline uint32_t HashLy(uint8_t* buffer, size_t buffer_size, uint32_t hash) {
+inline uint32_t HashLy(void* buffer, size_t buffer_size, uint32_t hash) {
 	for (int i = 0; i < buffer_size; i++) {
-		hash = HashLy(buffer[i], hash);
+		hash = HashLy((reinterpret_cast<uint8_t*>(buffer))[i], hash);
 	}
 	return hash;
 }

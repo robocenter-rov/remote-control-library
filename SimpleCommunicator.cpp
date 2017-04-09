@@ -1,7 +1,6 @@
 #include "SimpleCommunicator.h"
 #include "DataReader.h"
 #include "Utils.h"
-#include <wincrypt.h>
 
 enum RECEIVE_BLOCK_IDS {
 	RBI_STATE = 0,
@@ -45,6 +44,9 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_max_motor_force_val = 4095;
 	_camera1_pos = 0;
 	_camera2_pos = 0;
+
+	_receive_time_out = std::chrono::milliseconds(1000);
+	_send_frequency = std::chrono::milliseconds(50);
 }
 
 void SimpleCommunicator_t::Begin() {
@@ -183,175 +185,192 @@ void SimpleCommunicator_t::_Update() {
 			return;
 		}
 
-		if (std::chrono::system_clock::now() - _last_received_msg_time > std::chrono::milliseconds(200)) {
-			if (_connected && _on_connection_state_change) {
-				_on_connection_state_change(false);
-			}
-
-			_connected = false;
-
-			_connection_provider
-				->BeginPacket()
-				->WriteUInt32(_last_sended_msg_number)
-				->EndPacket();
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		} else {
-			if (!_connected && _on_connection_state_change) {
-				_on_connection_state_change(true);
-			}
-
-			_connected = true;
-		}
-
 		int readed_bytes = 0;
 		if (readed_bytes = _connection_provider->Receive()) {
-			auto dr = DataReader_t(_connection_provider->ReceiveBuffer(), readed_bytes);
+			try {
+				auto dr = DataReader_t(_connection_provider->ReceiveBuffer(), readed_bytes);
 
-			uint32_t msg_number = dr.GetUInt32();
-			uint16_t remote_packets_leak = dr.GetUInt16();
+				uint32_t msg_number = dr.GetUInt32();
+				uint16_t remote_packets_leak = dr.GetUInt16();
 
-			if (msg_number < _last_received_msg_number && _on_robot_restart) {
-				_on_robot_restart();
-			} else {
-				int send_leak = remote_packets_leak - _remote_packets_leak;
-				int receive_leak = msg_number - _last_received_msg_number - 1;
-
-				if ((send_leak || receive_leak) && _on_packets_leak) {
-					_on_packets_leak(send_leak, receive_leak);
+				if (msg_number < _last_received_msg_number) {
+					if (_on_robot_restart) {
+						_on_robot_restart();
+					}
 				}
+				else {
+					int send_leak = remote_packets_leak - _remote_packets_leak;
+					int receive_leak = msg_number - _last_received_msg_number - 1;
+
+					if ((send_leak || receive_leak) && _on_packets_leak) {
+						_on_packets_leak(send_leak, receive_leak);
+					}
+				}
+
+				_last_received_msg_number = msg_number;
+
+				while (dr.Available()) {
+					RECEIVE_BLOCK_IDS block_id = static_cast<RECEIVE_BLOCK_IDS>(dr.GetUInt8());
+					switch (block_id) {
+					case RBI_STATE: {
+						auto state = dr.GetVar<State_t>();
+						if (cmp(state, _current_remote_state) && _on_state_change) {
+							_on_state_change(state);
+						}
+						_current_remote_state = state;
+
+						auto i2c_scan_token = dr.GetUInt8();
+						auto i2c_devices = dr.GetVar<I2CDevices_t>();
+
+						if (i2c_scan_token != _last_i2c_scan_remote && _on_i2c_devices_receive) {
+							_on_i2c_devices_receive(i2c_devices);
+						}
+						_last_i2c_scan_remote = i2c_scan_token;
+
+						_remote_pid_hash = dr.GetVar<uint32_t>();
+					}
+					break;
+					case RBI_SENSOR_DATA: {
+						Orientation_t orientation;
+						orientation.q1 = dr.GetFloat();
+						orientation.q2 = dr.GetFloat();
+						orientation.q3 = dr.GetFloat();
+						orientation.q4 = dr.GetFloat();
+						float depth = dr.GetFloat();
+
+						if (_on_orientation_receive) {
+							_on_orientation_receive(orientation);
+						}
+
+						if (_on_depth_receive) {
+							_on_depth_receive(depth);
+						}
+					}
+					break;
+					case RBI_RAW_SENSOR_DATA: {
+						RawSensorData_t raw_sendor_data;
+
+						raw_sendor_data.Ax = dr.GetInt16();
+						raw_sendor_data.Ay = dr.GetInt16();
+						raw_sendor_data.Az = dr.GetInt16();
+
+						raw_sendor_data.Gx = dr.GetInt16();
+						raw_sendor_data.Gy = dr.GetInt16();
+						raw_sendor_data.Gz = dr.GetInt16();
+
+						raw_sendor_data.Mx = dr.GetInt16();
+						raw_sendor_data.My = dr.GetInt16();
+						raw_sendor_data.Mz = dr.GetInt16();
+
+						if (_on_raw_sensor_data_receive) {
+							_on_raw_sensor_data_receive(raw_sendor_data);
+						}
+					}
+											  break;
+					case RBI_CALIBRATED_SENSOR_DATA: {
+						CalibratedSensorData_t calibrated_sensor_data;
+
+						calibrated_sensor_data.Ax = dr.GetFloat();
+						calibrated_sensor_data.Ay = dr.GetFloat();
+						calibrated_sensor_data.Az = dr.GetFloat();
+
+						calibrated_sensor_data.Mx = dr.GetFloat();
+						calibrated_sensor_data.My = dr.GetFloat();
+						calibrated_sensor_data.Mz = dr.GetFloat();
+
+						calibrated_sensor_data.Gx = dr.GetFloat();
+						calibrated_sensor_data.Gy = dr.GetFloat();
+						calibrated_sensor_data.Gz = dr.GetFloat();
+
+						if (_on_calibrated_sensor_data_receive) {
+							_on_calibrated_sensor_data_receive(calibrated_sensor_data);
+						}
+					}
+					break;
+					case RBI_BLUETOOTH_MSG_RECEIVE: {
+						const char* msg = reinterpret_cast<const char*>(dr.GetBytes(7));
+
+						if (_on_bluetooth_msg_receive) {
+							_on_bluetooth_msg_receive(std::string(msg, 7));
+						}
+					}
+					break;
+					case RBI_PID_STATE_RECEIVE: {
+						PidState_t depth_pid;
+
+						depth_pid.In = dr.GetFloat();
+						depth_pid.Target = dr.GetFloat();
+						depth_pid.Out = dr.GetFloat();
+
+						PidState_t pitch_pid;
+
+						pitch_pid.In = dr.GetFloat();
+						pitch_pid.Target = dr.GetFloat();
+						pitch_pid.Out = dr.GetFloat();
+
+						PidState_t yaw_pid;
+
+						yaw_pid.In = dr.GetFloat();
+						yaw_pid.Target = dr.GetFloat();
+						yaw_pid.Out = dr.GetFloat();
+
+						if (_on_pid_state_receive) {
+							_on_pid_state_receive(depth_pid, pitch_pid, yaw_pid);
+						}
+					}
+					break;
+					case RBI_MOTORS_STATE_RECEIVE: {
+						MotorsState_t motors_state;
+
+						motors_state.M1Force = dr.GetFloat();
+						motors_state.M2Force = dr.GetFloat();
+						motors_state.M3Force = dr.GetFloat();
+						motors_state.M4Force = dr.GetFloat();
+						motors_state.M5Force = dr.GetFloat();
+						motors_state.M6Force = dr.GetFloat();
+
+						if (_on_motors_state_receive) {
+							_on_motors_state_receive(motors_state);
+						}
+					}
+					break;
+					default:;
+					}
+				}
+			} catch(DataReader_t::too_short_buffer_exception_t e) {
+				printf("Too short buffer\n");
 			}
 
-			_last_received_msg_number = msg_number;
+			_last_received_msg_time = std::chrono::system_clock::now();
+		}
 
-			while (dr.Available()) {
-				RECEIVE_BLOCK_IDS block_id = static_cast<RECEIVE_BLOCK_IDS>(dr.GetUInt8());
-				switch (block_id) {
-				case RBI_STATE:
-					auto state = dr.GetVar<State_t>();
-					if (cmp(state, _current_remote_state) && _on_state_change) {
-						_on_state_change(state);
-					}
-					_current_remote_state = state;
-
-					auto i2c_scan_token = dr.GetUInt8();
-					auto i2c_devices = dr.GetVar<I2CDevices_t>();
-
-					if (i2c_scan_token != _last_i2c_scan_remote && _on_i2c_devices_receive) {
-						_on_i2c_devices_receive(i2c_devices);
-					}
-					_last_i2c_scan_remote = i2c_scan_token;
-
-					_remote_pid_hash = dr.GetVar<uint32_t>();
-					break;
-
-				case RBI_SENSOR_DATA:
-					Orientation_t orientation;
-					orientation.q1 = dr.GetFloat();
-					orientation.q2 = dr.GetFloat();
-					orientation.q3 = dr.GetFloat();
-					orientation.q4 = dr.GetFloat();
-					float depth = dr.GetFloat();
-
-					if (_on_orientation_receive) {
-						_on_orientation_receive(orientation);
-					}
-
-					if (_on_depth_receive) {
-						_on_depth_receive(depth);
-					}
-				case RBI_RAW_SENSOR_DATA:
-					RawSensorData_t raw_sendor_data;
-
-					raw_sendor_data.Ax = dr.GetInt16();
-					raw_sendor_data.Ay = dr.GetInt16();
-					raw_sendor_data.Az = dr.GetInt16();
-
-					raw_sendor_data.Gx = dr.GetInt16();
-					raw_sendor_data.Gy = dr.GetInt16();
-					raw_sendor_data.Gz = dr.GetInt16();
-
-					raw_sendor_data.Mx = dr.GetInt16();
-					raw_sendor_data.My = dr.GetInt16();
-					raw_sendor_data.Mz = dr.GetInt16();
-
-					if (_on_raw_sensor_data_receive) {
-						_on_raw_sensor_data_receive(raw_sendor_data);
-					}
-					break;
-				case RBI_CALIBRATED_SENSOR_DATA:
-					CalibratedSensorData_t calibrated_sensor_data;
-
-					calibrated_sensor_data.Ax = dr.GetFloat();
-					calibrated_sensor_data.Ay = dr.GetFloat();
-					calibrated_sensor_data.Az = dr.GetFloat();
-
-					calibrated_sensor_data.Mx = dr.GetFloat();
-					calibrated_sensor_data.My = dr.GetFloat();
-					calibrated_sensor_data.Mz = dr.GetFloat();
-
-					calibrated_sensor_data.Gx = dr.GetFloat();
-					calibrated_sensor_data.Gy = dr.GetFloat();
-					calibrated_sensor_data.Gz = dr.GetFloat();
-
-					if (_on_calibrated_sensor_data_receive) {
-						_on_calibrated_sensor_data_receive(calibrated_sensor_data);
-					}
-					break;					
-				case RBI_BLUETOOTH_MSG_RECEIVE:
-					const char* msg = reinterpret_cast<const char*>(dr.GetBytes(7));
-
-					if (_on_bluetooth_msg_receive) {
-						_on_bluetooth_msg_receive(std::string(msg, 7));
-					}
-					break;
-				case RBI_PID_STATE_RECEIVE:
-					PidState_t depth_pid;
-
-					depth_pid.In = dr.GetFloat();
-					depth_pid.Target = dr.GetFloat();
-					depth_pid.Out = dr.GetFloat();
-
-					PidState_t pitch_pid;
-
-					pitch_pid.In = dr.GetFloat();
-					pitch_pid.Target = dr.GetFloat();
-					pitch_pid.Out = dr.GetFloat();
-
-					PidState_t yaw_pid;
-
-					yaw_pid.In = dr.GetFloat();
-					yaw_pid.Target = dr.GetFloat();
-					yaw_pid.Out = dr.GetFloat();
-
-					if (_on_pid_state_receive) {
-						_on_pid_state_receive(depth_pid, pitch_pid, yaw_pid);
-					}
-					break;
-				case RBI_MOTORS_STATE_RECEIVE:
-					MotorsState_t motors_state;
-
-					motors_state.M1Force = dr.GetInt16();
-				break;
-				default:;
-				}
+		if (std::chrono::system_clock::now() - _last_received_msg_time > _receive_time_out) {
+			if (_connected && _on_connection_state_change) {
+				_on_connection_state_change(_connected = false);
+			}
+		}
+		else {
+			if (!_connected && _on_connection_state_change) {
+				_on_connection_state_change(_connected = true);
 			}
 		}
 
-		_connection_provider->BeginPacket()
-			->WriteUInt32(_last_sended_msg_number)
-			->WriteUInt8(SBI_STATE)
-			->WriteVar(_current_remote_state)
-			->WriteUInt8(_last_i2c_scan)
-			->WriteInt8(SBI_DEVICES_STATE)
-			->WriteFloat(_manipulator_state.ArmPos)
-			->WriteFloat(_manipulator_state.HandPos)
-			->WriteFloat(_manipulator_state.M1)
-			->WriteFloat(_manipulator_state.M2)
-			->WriteFloat(_camera1_pos)
-			->WriteFloat(_camera2_pos);
-			
-		switch (_movement_control_type) {
-			case MCT_DIRECT: 
+		if (std::chrono::system_clock::now() - _last_sended_msg_time > _send_frequency) {
+			_connection_provider->BeginPacket()
+				->WriteUInt32(_last_sended_msg_number)
+				->WriteUInt8(SBI_STATE)
+				->WriteVar(_state)
+				->WriteUInt8(_last_i2c_scan)
+				->WriteInt8(SBI_DEVICES_STATE)
+				->WriteFloat(_manipulator_state.ArmPos)
+				->WriteFloat(_manipulator_state.HandPos)
+				->WriteFloat(_manipulator_state.M1)
+				->WriteFloat(_manipulator_state.M2)
+				->WriteFloat(_camera1_pos)
+				->WriteFloat(_camera2_pos);
+
+			switch (_movement_control_type) {
+			case MCT_DIRECT:
 				_connection_provider
 					->WriteUInt8(SBI_MOTORS_STATE)
 					->WriteFloat(_motors_state.M1Force)
@@ -360,40 +379,41 @@ void SimpleCommunicator_t::_Update() {
 					->WriteFloat(_motors_state.M4Force)
 					->WriteFloat(_motors_state.M5Force)
 					->WriteFloat(_motors_state.M6Force);
-			break;
+				break;
 			case MCT_VECTOR:
 				_connection_provider
 					->WriteUInt8(SBI_MOVEMENT)
-					->WriteUInt8(_depth_control_type == CT_AUTO | _yaw_control_type == CT_AUTO << 1 | _pitch_control_type == CT_AUTO << 2)
+					->WriteUInt8((_depth_control_type == CT_AUTO) | (_yaw_control_type == CT_AUTO) << 1 | (_pitch_control_type == CT_AUTO) << 2)
 					->WriteFloat(_movement_force.x_force)
 					->WriteFloat(_movement_force.y_force)
 					->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force)
 					->WriteFloat(_yaw_control_type == CT_AUTO ? _yaw : _yaw_force)
 					->WriteFloat(_pitch_control_type == CT_AUTO ? _pitch : _pitch_force);
-			break;
-			default: ;
+				break;
+			default:;
+			}
+
+			if (_remote_pid_hash != _pid_hash) {
+				_connection_provider
+					->WriteUInt8(SBI_PID)
+
+					->WriteFloat(_depth_pid.P)
+					->WriteFloat(_depth_pid.I)
+					->WriteFloat(_depth_pid.D)
+
+					->WriteFloat(_pitch_pid.P)
+					->WriteFloat(_pitch_pid.I)
+					->WriteFloat(_pitch_pid.D)
+
+					->WriteFloat(_yaw_pid.P)
+					->WriteFloat(_yaw_pid.I)
+					->WriteFloat(_yaw_pid.D);
+			}
+
+			_connection_provider->EndPacket();
+			
+			_last_sended_msg_time = std::chrono::system_clock::now();
 		}
-
-		if (_remote_pid_hash != _pid_hash) {
-			_connection_provider
-				->WriteUInt8(SBI_PID)
-
-				->WriteFloat(_depth_pid.P)
-				->WriteFloat(_depth_pid.I)
-				->WriteFloat(_depth_pid.D)
-
-				->WriteFloat(_pitch_pid.P)
-				->WriteFloat(_pitch_pid.I)
-				->WriteFloat(_pitch_pid.D)
-
-				->WriteFloat(_yaw_pid.P)
-				->WriteFloat(_yaw_pid.I)
-				->WriteFloat(_yaw_pid.D);
-		}
-
-		_connection_provider->EndPacket();
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
 }
 

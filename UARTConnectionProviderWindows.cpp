@@ -1,4 +1,5 @@
 #include "UARTConnectionProviderWindows.h"
+#include "Utils.h"
 
 #define END             0300    /* indicates end of packet */
 #define ESC             0333    /* indicates byte stuffing */
@@ -42,7 +43,7 @@ ReceiveBufferLimitExceeded_t::ReceiveBufferLimitExceeded_t() : ConnectionProvide
 void UARTConnectionProvider_t::WriteToSendBuffer(uint8_t val) {
 	if (_send_head <= _send_buffer_size) {
 		_send_buffer[_send_head++] = val;
-		//printf("Write: %d\n", (uint32_t)val);
+		//printf("Write: %X\n", (uint32_t)val);
 	} else {
 		throw SendBufferLimitExceeded_t();
 	}
@@ -89,6 +90,8 @@ void UARTConnectionProvider_t::Begin() {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
 	}
 	serialParams.BaudRate = _baud_rate;
+	serialParams.fNull = false;
+	serialParams.fBinary = true;
 	if (!SetCommState(_h_com_port, &serialParams)) {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
 	}
@@ -98,19 +101,19 @@ void UARTConnectionProvider_t::Begin() {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
 	}
 
-	timeouts.ReadIntervalTimeout = 20;
+	timeouts.ReadIntervalTimeout = 100;
 	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.ReadTotalTimeoutConstant = 100;
+	timeouts.ReadTotalTimeoutConstant = 500;
 	timeouts.WriteTotalTimeoutMultiplier = 0;
 	timeouts.WriteTotalTimeoutConstant = 0;
 
 	if (!SetCommTimeouts(_h_com_port, &timeouts)) {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
 	}
-	/*
+	
 	if (!PurgeComm(_h_com_port, PURGE_RXCLEAR | PURGE_TXCLEAR)) {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
-	}*/
+	}
 }
 
 void UARTConnectionProvider_t::Stop() {
@@ -195,7 +198,11 @@ int UARTConnectionProvider_t::Receive() {
 			nullptr
 		)) {
 			throw PortClosedException_t(_com_port_name);
-		}
+		}/*
+		printf("Bytes readed: %d", readed_bytes);
+		for (int i = 0; i < readed_bytes; i++) {
+			printf("Raw received: %X\n", (uint32_t)buffer[i]);
+		}*/
 
 		try {
 			_raw_receive_buffer.Write(buffer, readed_bytes);
@@ -206,7 +213,7 @@ int UARTConnectionProvider_t::Receive() {
 
 	int c;
 	while((c = _raw_receive_buffer.GetChar()) >= 0) {
-		//printf("Received: %X\n", c);
+		//printf("Received: %X\n", (uint32_t)c);
 
 		if (c == ESC) {
 			_in_esc = true;
@@ -232,8 +239,8 @@ int UARTConnectionProvider_t::Receive() {
 			uint32_t* hash_ptr = reinterpret_cast<uint32_t*>(_receive_buffer + _received - sizeof(uint32_t));
 			uint32_t msg_hash = 0;
 
-			for (uint8_t *p = _receive_buffer; p != (uint8_t*)hash_ptr; p++) {
-				msg_hash = HashLy(*p, msg_hash);
+			for (int i = 0; i < _received - sizeof(uint32_t); i++) {
+				msg_hash = HashLy(_receive_buffer[i], msg_hash);
 			}
 
 			size_t t = _received - sizeof(uint32_t);

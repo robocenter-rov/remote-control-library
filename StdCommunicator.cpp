@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <algorithm>
 #include "Utils.h"
+#include "DataReader.h"
 
 enum RECEIVE_MESSAGE_ID {
 	MSG_EXCEPTION = 100,
@@ -14,11 +15,11 @@ enum RECEIVE_MESSAGE_ID {
 StdCommunicator_t::StdCommunicator_t(ConnectionProvider_t* connection_provider) : Communicator_t(connection_provider) {}
 
 ConnectionProvider_t* StdCommunicator_t::BeginMessage(SEND_MESSAGE_ID msg_id) const {
-	return _connection_provider->BeginPacket()->Write(char(msg_id));
+	return _connection_provider->BeginPacket()->WriteUInt8(msg_id);
 }
 
 ConnectionProvider_t* StdCommunicator_t::BeginTaskMessage(SEND_MESSAGE_ID msg_id, int worker_id, unsigned int tag) const {
-	return BeginMessage(msg_id)->WriteInt(worker_id)->WriteInt(tag);
+	return BeginMessage(msg_id)->WriteInt16(worker_id)->WriteInt16(tag);
 }
 
 void StdCommunicator_t::fill_task_msg(char* buffer, int workerId, int tag) {
@@ -42,9 +43,9 @@ void StdCommunicator_t::Update() {
 		}
 
 		const void* buffer = _connection_provider->ReceiveBuffer();
-		ConnectionProvider_t::DataReader_t dr(buffer, received);
+		DataReader_t dr(buffer, received);
 
-		RECEIVE_MESSAGE_ID msg_id = static_cast<RECEIVE_MESSAGE_ID>(dr.GetByte());
+		RECEIVE_MESSAGE_ID msg_id = static_cast<RECEIVE_MESSAGE_ID>(dr.GetUInt8());
 
 		AdditionalData_t* additional_data = nullptr;
 
@@ -53,15 +54,15 @@ void StdCommunicator_t::Update() {
 			case MSG_EXCEPTION: break;
 			case MSG_WORKER_STATE: case MSG_LAST_USED_WORKER_STATE: {
 
-				int worker_id = dr.GetInt();
+				int worker_id = dr.GetInt16();
 
 				auto worker_state = WorkerState_t();
 
 				if (worker_id >= 0) {
-					WORKER_STATUS worker_status = static_cast<WORKER_STATUS>(dr.GetInt());
-					TASK_ID task_id = static_cast<TASK_ID>(dr.GetInt());
-					int task_tag = dr.GetInt();
-					TASK_STATUS task_status = static_cast<TASK_STATUS>(dr.GetInt());
+					WORKER_STATUS worker_status = static_cast<WORKER_STATUS>(dr.GetInt16());
+					TASK_ID task_id = static_cast<TASK_ID>(dr.GetInt16());
+					int task_tag = dr.GetInt16();
+					TASK_STATUS task_status = static_cast<TASK_STATUS>(dr.GetInt16());
 
 					switch (task_status) {
 					case TS_OK:
@@ -69,7 +70,7 @@ void StdCommunicator_t::Update() {
 						case TI_BLINK_FLASHLIGHT: break;
 						case TI_I2C_SCAN:
 							uint16_t device_count;
-							device_count = dr.GetUInt();
+							device_count = dr.GetUInt16();
 							additional_data = new I2CScanningDoneAdditionalData_t(dr.GetBytes(device_count), device_count);
 							break;
 						case TI_RECEIVE_BLUETOOTH_MESSAGE:
@@ -85,7 +86,7 @@ void StdCommunicator_t::Update() {
 					case TS_BLINKING:
 						BlinkFlashlightAdditionalData_t* ad;
 						ad = new BlinkFlashlightAdditionalData_t;
-						ad->blinked_count = dr.GetUInt();
+						ad->blinked_count = dr.GetUInt16();
 						additional_data = ad;
 						break;
 					case TS_BLUETOOTH_WAITING_FOR_CONNECTION: break;
@@ -118,7 +119,7 @@ void StdCommunicator_t::Update() {
 			} break;
 			default:;
 		}
-		} catch(ConnectionProvider_t::DataReader_t::too_short_buffer_exception_t) {}
+		} catch(DataReader_t::too_short_buffer_exception_t) {}
 	}
 }
 
@@ -130,28 +131,28 @@ void StdCommunicator_t::Begin() {
 
 void StdCommunicator_t::SendMotorsThrust(float motor1, float motor2, float motor3, float motor4, float motor5, float motor6) {
 	BeginMessage(MSG_SET_MOTORS_THRUST)
-		->Write(motor1)
-		->Write(motor2)
-		->Write(motor3)
-		->Write(motor4)
-		->Write(motor5)
-		->Write(motor6)
+		->WriteFloat(motor1)
+		->WriteFloat(motor2)
+		->WriteFloat(motor3)
+		->WriteFloat(motor4)
+		->WriteFloat(motor5)
+		->WriteFloat(motor6)
 	->EndPacket();
 }
 
 void StdCommunicator_t::SendLocalMotorsForce(float move_x, float move_y, float move_z, float rotate_y, float rotate_z) {
 	BeginMessage(MSG_SET_LOCAL_FORCE)
-		->Write(move_x)
-		->Write(move_y)
-		->Write(move_z)
-		->Write(rotate_y)
-		->Write(rotate_z)
+		->WriteFloat(move_x)
+		->WriteFloat(move_y)
+		->WriteFloat(move_z)
+		->WriteFloat(rotate_y)
+		->WriteFloat(rotate_z)
 	->EndPacket();
 }
 
 void StdCommunicator_t::SendFlashLightState(int workerId, unsigned tag, bool state) {
 	BeginTaskMessage(MSG_SET_FLASHLIGHT_STATE, workerId, tag)
-		->Write(state)
+		->WriteBool(state)
 	->EndPacket();
 }
 
@@ -168,7 +169,7 @@ void StdCommunicator_t::GetLastUsedWorkerState() {
 }
 
 void StdCommunicator_t::GetWorkerState(int workerId) {
-	BeginMessage(MSG_GET_WORKER_STATE)->WriteInt(workerId)->EndPacket();
+	BeginMessage(MSG_GET_WORKER_STATE)->WriteInt16(workerId)->EndPacket();
 }
 
 void StdCommunicator_t::SendPing() {
@@ -176,5 +177,5 @@ void StdCommunicator_t::SendPing() {
 }
 
 void StdCommunicator_t::FreeWorker(int workerId) {
-	BeginMessage(MSG_FREE_WORKER)->WriteInt(workerId)->EndPacket();
+	BeginMessage(MSG_FREE_WORKER)->WriteInt16(workerId)->EndPacket();
 }

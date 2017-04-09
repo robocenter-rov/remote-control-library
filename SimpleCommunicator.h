@@ -148,6 +148,10 @@ private:
 	uint32_t _remote_packets_leak;
 
 	std::chrono::system_clock::time_point _last_received_msg_time;
+	std::chrono::system_clock::time_point _last_sended_msg_time;
+
+	std::chrono::system_clock::duration _receive_time_out;
+	std::chrono::system_clock::duration _send_frequency;
 
 	bool _connected;
 

@@ -2,7 +2,6 @@
 #include "ConnectionProvider.h"
 #include <string>
 #include <windows.h>
-#include "CircularBuffer.h"
 #include "RingBuffer.h"
 
 class CantOpenPortException_t : public ConnectionProviderException_t {
