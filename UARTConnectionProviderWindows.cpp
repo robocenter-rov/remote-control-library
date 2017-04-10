@@ -217,7 +217,7 @@ int UARTConnectionProvider_t::Receive() {
 
 		if (c == ESC) {
 			_in_esc = true;
-			continue;;
+			continue;
 		}
 
 		if (_in_esc) {
@@ -228,6 +228,7 @@ int UARTConnectionProvider_t::Receive() {
 				case ESC_ESC:
 					c = ESC;
 					break;
+				default: break;
 			}
 			_in_esc = false;
 		} else if (c == END) {
