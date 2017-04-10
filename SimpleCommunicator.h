@@ -145,7 +145,7 @@ private:
 	uint32_t _last_received_msg_number;
 	uint32_t _last_sended_msg_number;
 
-	uint32_t _remote_packets_leak;
+	uint16_t _remote_packets_leak;
 
 	std::chrono::system_clock::time_point _last_received_msg_time;
 	std::chrono::system_clock::time_point _last_sended_msg_time;
