@@ -151,8 +151,8 @@ ConnectionProvider_t* UARTConnectionProvider_t::WriteUInt8(uint8_t val) {
 		break;
 	default:
 		WriteToSendBuffer(val);
-		_current_hash = HashLy(val, _current_hash);
 	}
+	_current_hash = HashLy(val, _current_hash);
 	return this;
 }
 
