@@ -235,7 +235,7 @@ void SimpleCommunicator_t::_Receiver() {
 
 						_remote_pid_hash = dr.GetVar<uint32_t>();
 					}
-									break;
+					break;
 					case RBI_SENSOR_DATA: {
 						Orientation_t orientation;
 						orientation.q1 = dr.GetFloat();
@@ -252,7 +252,7 @@ void SimpleCommunicator_t::_Receiver() {
 							_on_depth_receive(depth);
 						}
 					}
-										  break;
+					break;
 					case RBI_RAW_SENSOR_DATA: {
 						RawSensorData_t raw_sendor_data;
 
@@ -272,7 +272,7 @@ void SimpleCommunicator_t::_Receiver() {
 							_on_raw_sensor_data_receive(raw_sendor_data);
 						}
 					}
-											  break;
+					break;
 					case RBI_CALIBRATED_SENSOR_DATA: {
 						CalibratedSensorData_t calibrated_sensor_data;
 
@@ -292,7 +292,7 @@ void SimpleCommunicator_t::_Receiver() {
 							_on_calibrated_sensor_data_receive(calibrated_sensor_data);
 						}
 					}
-													 break;
+					break;
 					case RBI_BLUETOOTH_MSG_RECEIVE: {
 						const char* msg = reinterpret_cast<const char*>(dr.GetBytes(7));
 
@@ -300,7 +300,7 @@ void SimpleCommunicator_t::_Receiver() {
 							_on_bluetooth_msg_receive(std::string(msg, 7));
 						}
 					}
-													break;
+					break;
 					case RBI_PID_STATE_RECEIVE: {
 						PidState_t depth_pid;
 
@@ -324,7 +324,7 @@ void SimpleCommunicator_t::_Receiver() {
 							_on_pid_state_receive(depth_pid, pitch_pid, yaw_pid);
 						}
 					}
-												break;
+					break;
 					case RBI_MOTORS_STATE_RECEIVE: {
 						MotorsState_t motors_state;
 
@@ -339,7 +339,7 @@ void SimpleCommunicator_t::_Receiver() {
 							_on_motors_state_receive(motors_state);
 						}
 					}
-												   break;
+					break;
 					default:;
 					}
 				}
