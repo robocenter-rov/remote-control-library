@@ -101,9 +101,9 @@ void UARTConnectionProvider_t::Begin() {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
 	}
 
-	timeouts.ReadIntervalTimeout = 100;
-	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.ReadTotalTimeoutConstant = 500;
+	timeouts.ReadIntervalTimeout = 10;
+	timeouts.ReadTotalTimeoutMultiplier = 3;
+	timeouts.ReadTotalTimeoutConstant = 10;
 	timeouts.WriteTotalTimeoutMultiplier = 0;
 	timeouts.WriteTotalTimeoutConstant = 0;
 
