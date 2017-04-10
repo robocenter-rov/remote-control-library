@@ -1,6 +1,7 @@
 #include "SimpleCommunicator.h"
 #include "DataReader.h"
 #include "Utils.h"
+#include <complex>
 
 enum RECEIVE_BLOCK_IDS {
 	RBI_STATE = 0,
@@ -41,21 +42,24 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_pid_hash = 0;
 	_remote_pid_hash = 0;
 	_remote_packets_leak = 0;
-	_max_motor_force_val = 4095;
 	_camera1_pos = 0;
 	_camera2_pos = 0;
 
-	_receive_time_out = std::chrono::milliseconds(1000);
-	_send_frequency = std::chrono::milliseconds(50);
+	_receive_time_out = std::chrono::milliseconds(500);
+	_send_frequency = std::chrono::milliseconds(20);
 }
 
 void SimpleCommunicator_t::Begin() {
 	_updating = true;
-	_updater = std::thread(&SimpleCommunicator_t::_Update, this);
+	_receiver = std::thread(&SimpleCommunicator_t::_Receiver, this);
+	_sender = std::thread(&SimpleCommunicator_t::_Sender, this);
 }
 
 void SimpleCommunicator_t::Stop() {
 	_updating = false;
+
+	_receiver.join();
+	_sender.join();
 }
 
 inline void SimpleCommunicator_t::SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6) {
@@ -179,7 +183,7 @@ void SimpleCommunicator_t::_UpdatePidHash() {
 	_pid_hash = HashLy(_yaw_pid, _pid_hash);
 }
 
-void SimpleCommunicator_t::_Update() {
+void SimpleCommunicator_t::_Receiver() {
 	while (true) {
 		if (!_updating) {
 			return;
@@ -205,6 +209,8 @@ void SimpleCommunicator_t::_Update() {
 					if ((send_leak || receive_leak) && _on_packets_leak) {
 						_on_packets_leak(send_leak, receive_leak);
 					}
+
+					_remote_packets_leak = remote_packets_leak;
 				}
 
 				_last_received_msg_number = msg_number;
@@ -229,7 +235,7 @@ void SimpleCommunicator_t::_Update() {
 
 						_remote_pid_hash = dr.GetVar<uint32_t>();
 					}
-					break;
+									break;
 					case RBI_SENSOR_DATA: {
 						Orientation_t orientation;
 						orientation.q1 = dr.GetFloat();
@@ -246,7 +252,7 @@ void SimpleCommunicator_t::_Update() {
 							_on_depth_receive(depth);
 						}
 					}
-					break;
+										  break;
 					case RBI_RAW_SENSOR_DATA: {
 						RawSensorData_t raw_sendor_data;
 
@@ -286,7 +292,7 @@ void SimpleCommunicator_t::_Update() {
 							_on_calibrated_sensor_data_receive(calibrated_sensor_data);
 						}
 					}
-					break;
+													 break;
 					case RBI_BLUETOOTH_MSG_RECEIVE: {
 						const char* msg = reinterpret_cast<const char*>(dr.GetBytes(7));
 
@@ -294,7 +300,7 @@ void SimpleCommunicator_t::_Update() {
 							_on_bluetooth_msg_receive(std::string(msg, 7));
 						}
 					}
-					break;
+													break;
 					case RBI_PID_STATE_RECEIVE: {
 						PidState_t depth_pid;
 
@@ -318,7 +324,7 @@ void SimpleCommunicator_t::_Update() {
 							_on_pid_state_receive(depth_pid, pitch_pid, yaw_pid);
 						}
 					}
-					break;
+												break;
 					case RBI_MOTORS_STATE_RECEIVE: {
 						MotorsState_t motors_state;
 
@@ -333,11 +339,12 @@ void SimpleCommunicator_t::_Update() {
 							_on_motors_state_receive(motors_state);
 						}
 					}
-					break;
+												   break;
 					default:;
 					}
 				}
-			} catch(DataReader_t::too_short_buffer_exception_t e) {
+			}
+			catch (DataReader_t::too_short_buffer_exception_t e) {
 				printf("Too short buffer\n");
 			}
 
@@ -354,66 +361,75 @@ void SimpleCommunicator_t::_Update() {
 				_on_connection_state_change(_connected = true);
 			}
 		}
+	}
+}
 
-		if (std::chrono::system_clock::now() - _last_sended_msg_time > _send_frequency) {
-			_connection_provider->BeginPacket()
-				->WriteUInt32(_last_sended_msg_number)
-				->WriteUInt8(SBI_STATE)
-				->WriteVar(_state)
-				->WriteUInt8(_last_i2c_scan)
-				->WriteInt8(SBI_DEVICES_STATE)
-				->WriteFloat(_manipulator_state.ArmPos)
-				->WriteFloat(_manipulator_state.HandPos)
-				->WriteFloat(_manipulator_state.M1)
-				->WriteFloat(_manipulator_state.M2)
-				->WriteFloat(_camera1_pos)
-				->WriteFloat(_camera2_pos);
-
-			switch (_movement_control_type) {
-			case MCT_DIRECT:
-				_connection_provider
-					->WriteUInt8(SBI_MOTORS_STATE)
-					->WriteFloat(_motors_state.M1Force)
-					->WriteFloat(_motors_state.M2Force)
-					->WriteFloat(_motors_state.M3Force)
-					->WriteFloat(_motors_state.M4Force)
-					->WriteFloat(_motors_state.M5Force)
-					->WriteFloat(_motors_state.M6Force);
-				break;
-			case MCT_VECTOR:
-				_connection_provider
-					->WriteUInt8(SBI_MOVEMENT)
-					->WriteUInt8((_depth_control_type == CT_AUTO) | (_yaw_control_type == CT_AUTO) << 1 | (_pitch_control_type == CT_AUTO) << 2)
-					->WriteFloat(_movement_force.x_force)
-					->WriteFloat(_movement_force.y_force)
-					->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force)
-					->WriteFloat(_yaw_control_type == CT_AUTO ? _yaw : _yaw_force)
-					->WriteFloat(_pitch_control_type == CT_AUTO ? _pitch : _pitch_force);
-				break;
-			default:;
-			}
-
-			if (_remote_pid_hash != _pid_hash) {
-				_connection_provider
-					->WriteUInt8(SBI_PID)
-
-					->WriteFloat(_depth_pid.P)
-					->WriteFloat(_depth_pid.I)
-					->WriteFloat(_depth_pid.D)
-
-					->WriteFloat(_pitch_pid.P)
-					->WriteFloat(_pitch_pid.I)
-					->WriteFloat(_pitch_pid.D)
-
-					->WriteFloat(_yaw_pid.P)
-					->WriteFloat(_yaw_pid.I)
-					->WriteFloat(_yaw_pid.D);
-			}
-
-			_connection_provider->EndPacket();
-			
-			_last_sended_msg_time = std::chrono::system_clock::now();
+void SimpleCommunicator_t::_Sender() {
+	while (true) {
+		if (!_updating) {
+			return;
 		}
+
+		//printf("%lld\n", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - _last_sended_msg_time).count());
+		_connection_provider->BeginPacket()
+			->WriteUInt32(++_last_sended_msg_number)
+			->WriteUInt8(SBI_STATE)
+			->WriteVar(_state)
+			->WriteUInt8(_last_i2c_scan)
+			->WriteInt8(SBI_DEVICES_STATE)
+			->WriteFloat(_manipulator_state.ArmPos)
+			->WriteFloat(_manipulator_state.HandPos)
+			->WriteFloat(_manipulator_state.M1)
+			->WriteFloat(_manipulator_state.M2)
+			->WriteFloat(_camera1_pos)
+			->WriteFloat(_camera2_pos);
+
+		switch (_movement_control_type) {
+		case MCT_DIRECT:
+			_connection_provider
+				->WriteUInt8(SBI_MOTORS_STATE)
+				->WriteFloat(_motors_state.M1Force)
+				->WriteFloat(_motors_state.M2Force)
+				->WriteFloat(_motors_state.M3Force)
+				->WriteFloat(_motors_state.M4Force)
+				->WriteFloat(_motors_state.M5Force)
+				->WriteFloat(_motors_state.M6Force);
+			break;
+		case MCT_VECTOR:
+			_connection_provider
+				->WriteUInt8(SBI_MOVEMENT)
+				->WriteUInt8((_depth_control_type == CT_AUTO) | (_yaw_control_type == CT_AUTO) << 1 | (_pitch_control_type == CT_AUTO) << 2)
+				->WriteFloat(_movement_force.x_force)
+				->WriteFloat(_movement_force.y_force)
+				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force)
+				->WriteFloat(_yaw_control_type == CT_AUTO ? _yaw : _yaw_force)
+				->WriteFloat(_pitch_control_type == CT_AUTO ? _pitch : _pitch_force);
+			break;
+		default:;
+		}
+
+		if (_remote_pid_hash != _pid_hash) {
+			_connection_provider
+				->WriteUInt8(SBI_PID)
+
+				->WriteFloat(_depth_pid.P)
+				->WriteFloat(_depth_pid.I)
+				->WriteFloat(_depth_pid.D)
+
+				->WriteFloat(_pitch_pid.P)
+				->WriteFloat(_pitch_pid.I)
+				->WriteFloat(_pitch_pid.D)
+
+				->WriteFloat(_yaw_pid.P)
+				->WriteFloat(_yaw_pid.I)
+				->WriteFloat(_yaw_pid.D);
+		}
+
+		_connection_provider->EndPacket();
+
+		_last_sended_msg_time = std::chrono::system_clock::now();
+
+		std::this_thread::sleep_for(_send_frequency);
 	}
 }
 

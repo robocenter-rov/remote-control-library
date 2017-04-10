@@ -155,12 +155,11 @@ private:
 
 	bool _connected;
 
-	int16_t _max_motor_force_val;
-
 	uint8_t _last_i2c_scan;
 	uint8_t _last_i2c_scan_remote;
 
-	std::thread _updater;
+	std::thread _sender;
+	std::thread _receiver;
 	bool _updating;
 
 	std::function<void(bool)> _on_connection_state_change;
@@ -178,7 +177,8 @@ private:
 
 	void _UpdatePidHash();
 
-	void _Update();
+	void _Receiver();
+	void _Sender();
 public:
 	SimpleCommunicator_t(ConnectionProvider_t* connection_provider);
 
