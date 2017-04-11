@@ -215,15 +215,8 @@ void SimpleCommunicator_t::_Receiver() {
 					}
 				}
 				else {
-					int send_leak = 0;
-					int receive_leak = 0;
-
-					if (_last_received_msg_number) {
-						receive_leak = msg_number - _last_received_msg_number - 1;
-					}
-					if (_remote_packets_leak) {
-						send_leak = remote_packets_leak > _remote_packets_leak ? remote_packets_leak - _remote_packets_leak : 0;
-					}
+					int send_leak = remote_packets_leak > _remote_packets_leak && _remote_packets_leak ? remote_packets_leak - _remote_packets_leak : 0;;
+					int receive_leak = _last_received_msg_number ? msg_number - _last_received_msg_number - 1 : 0;
 
 					if ((send_leak || receive_leak) && _on_packets_leak) {
 						_on_packets_leak(send_leak, receive_leak);
