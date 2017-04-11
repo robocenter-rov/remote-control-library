@@ -280,6 +280,7 @@ void SimpleCommunicator_t::_Receiver() {
 						raw_sendor_data.My = dr.GetInt16();
 						raw_sendor_data.Mz = dr.GetInt16();
 
+						raw_sendor_data.Depth = dr.GetFloat();
 						if (_on_raw_sensor_data_receive) {
 							_on_raw_sensor_data_receive(raw_sendor_data);
 						}

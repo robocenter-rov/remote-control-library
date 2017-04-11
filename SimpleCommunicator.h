@@ -60,6 +60,7 @@ public:
 		int Mx;
 		int My;
 		int Mz;
+		float Depth;
 	};
 
 	struct CalibratedSensorData_t {
