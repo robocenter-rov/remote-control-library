@@ -17,6 +17,10 @@ public:
 	struct State_t {
 		bool FlashlightState : 1;
 		bool ReadBluetooth : 1;
+		bool SendRawSensorData : 1;
+		bool SendCalibratedSensorData : 1;
+		bool SendPidState : 1;
+		bool SendMotorsState : 1;
 	};
 
 	struct I2CDevices_t {
@@ -202,6 +206,9 @@ public:
 	void SetDepthPid(float p, float i, float d);
 	void SetPitcPid(float p, float i, float d);
 	void SetYawPid(float p, float i, float d);
+	void SetReceiveRawSensorData(bool receive);
+	void SetReceiveCalibratedSensorData(bool receive);
+	void SetRescanI2CDevices();
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);

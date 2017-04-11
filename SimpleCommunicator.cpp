@@ -165,6 +165,18 @@ void SimpleCommunicator_t::SetYawPid(float p, float i, float d) {
 	_UpdatePidHash();
 }
 
+void SimpleCommunicator_t::SetReceiveRawSensorData(bool receive) {
+	_state.SendRawSensorData = receive;
+}
+
+void SimpleCommunicator_t::SetReceiveCalibratedSensorData(bool receive) {
+	_state.SendCalibratedSensorData = receive;
+}
+
+void SimpleCommunicator_t::SetRescanI2CDevices() {
+	_last_i2c_scan++;
+}
+
 void SimpleCommunicator_t::OnConnectionStateChange(std::function<void (bool)> on_connection_state_change) {
 	_on_connection_state_change = on_connection_state_change;
 }
