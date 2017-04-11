@@ -29,6 +29,7 @@ public:
 		bool HMC58X3 : 1;
 		bool ITG3200 : 1;
 		bool ADXL345 : 1;
+		bool BMP085 : 1;
 		bool MS5803 : 1;
 	};
 
