@@ -391,13 +391,14 @@ void SimpleCommunicator_t::_Sender() {
 			->WriteUInt8(SBI_STATE)
 			->WriteVar(_state)
 			->WriteUInt8(_last_i2c_scan)
-			->WriteInt8(SBI_DEVICES_STATE)
+			->WriteUInt8(SBI_DEVICES_STATE)
 			->WriteFloat(_manipulator_state.ArmPos)
 			->WriteFloat(_manipulator_state.HandPos)
 			->WriteFloat(_manipulator_state.M1)
 			->WriteFloat(_manipulator_state.M2)
 			->WriteFloat(_camera1_pos)
-			->WriteFloat(_camera2_pos);
+			->WriteFloat(_camera2_pos)
+		;
 
 		switch (_movement_control_type) {
 		case MCT_DIRECT:
@@ -442,7 +443,6 @@ void SimpleCommunicator_t::_Sender() {
 
 		_connection_provider->EndPacket();
 
-		_last_sended_msg_time = std::chrono::system_clock::now();
 
 		std::this_thread::sleep_for(_send_frequency);
 	}
