@@ -75,6 +75,7 @@ public:
 		float Mx;
 		float My;
 		float Mz;
+		float Depth;
 	};
 
 	struct Orientation_t {

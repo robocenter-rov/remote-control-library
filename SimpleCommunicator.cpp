@@ -293,13 +293,15 @@ void SimpleCommunicator_t::_Receiver() {
 						calibrated_sensor_data.Ay = dr.GetFloat();
 						calibrated_sensor_data.Az = dr.GetFloat();
 
+						calibrated_sensor_data.Gx = dr.GetFloat();
+						calibrated_sensor_data.Gy = dr.GetFloat();
+						calibrated_sensor_data.Gz = dr.GetFloat();
+
 						calibrated_sensor_data.Mx = dr.GetFloat();
 						calibrated_sensor_data.My = dr.GetFloat();
 						calibrated_sensor_data.Mz = dr.GetFloat();
 
-						calibrated_sensor_data.Gx = dr.GetFloat();
-						calibrated_sensor_data.Gy = dr.GetFloat();
-						calibrated_sensor_data.Gz = dr.GetFloat();
+						calibrated_sensor_data.Depth = dr.GetFloat();
 
 						if (_on_calibrated_sensor_data_receive) {
 							_on_calibrated_sensor_data_receive(calibrated_sensor_data);
