@@ -60,6 +60,10 @@ void SimpleCommunicator_t::Stop() {
 
 	_receiver.join();
 	_sender.join();
+
+	if (_on_stop) {
+		_on_stop(std::string());
+	}
 }
 
 inline void SimpleCommunicator_t::SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6) {
@@ -196,6 +200,7 @@ void SimpleCommunicator_t::_UpdatePidHash() {
 }
 
 void SimpleCommunicator_t::_Receiver() {
+	try {
 	while (true) {
 		if (!_updating) {
 			return;
@@ -281,6 +286,7 @@ void SimpleCommunicator_t::_Receiver() {
 						raw_sendor_data.Mz = dr.GetInt16();
 
 						raw_sendor_data.Depth = dr.GetFloat();
+
 						if (_on_raw_sensor_data_receive) {
 							_on_raw_sensor_data_receive(raw_sendor_data);
 						}
@@ -377,9 +383,18 @@ void SimpleCommunicator_t::_Receiver() {
 			}
 		}
 	}
+	} catch(ControllerException_t& e) {
+		_updating = false;
+		_sender.join();
+
+		if (_on_stop) {
+			_on_stop(e.error_message);
+		}
+	}
 }
 
 void SimpleCommunicator_t::_Sender() {
+	try {
 	while (true) {
 		if (!_updating) {
 			return;
@@ -446,8 +461,16 @@ void SimpleCommunicator_t::_Sender() {
 
 		_connection_provider->EndPacket();
 
-
 		std::this_thread::sleep_for(_send_frequency);
+	}
+	}
+	catch (ControllerException_t& e) {
+		_updating = false;
+		_receiver.join();
+
+		if (_on_stop) {
+			_on_stop(e.error_message);
+		}
 	}
 }
 
@@ -481,4 +504,8 @@ void SimpleCommunicator_t::OnCalibratedSensorDataReceive(std::function<void(Cali
 
 void SimpleCommunicator_t::OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive) {
 	_on_motors_state_receive = on_motors_state_receive;
+}
+
+void SimpleCommunicator_t::OnStop(std::function<void(std::string)> on_stop) {
+	_on_stop = on_stop;
 }

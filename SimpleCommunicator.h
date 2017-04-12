@@ -171,6 +171,7 @@ private:
 	std::function<void(CalibratedSensorData_t)> _on_calibrated_sensor_data_receive;
 	std::function<void(PidState_t, PidState_t, PidState_t)> _on_pid_state_receive;
 	std::function<void(MotorsState_t)> _on_motors_state_receive;
+	std::function<void(std::string)> _on_stop;
 
 	void _UpdatePidHash();
 
@@ -214,4 +215,5 @@ public:
 	void OnRawSensorDataReceive(std::function<void(RawSensorData_t)> on_raw_sensor_data_receive);
 	void OnCalibratedSensorDataReceive(std::function<void(CalibratedSensorData_t)> on_calibrated_sensor_data_receive);
 	void OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive);
+	void OnStop(std::function<void(std::string)> on_stop);
 };
