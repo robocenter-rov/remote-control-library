@@ -2,16 +2,6 @@
 #include "ConnectionProvider.h"
 #include <thread>
 
-enum I2C_DEVICES {
-	I2C_PCA1 = 1,
-	I2C_PCA2 = 2,
-	I2C_HMC58X3 = 3,
-	I2C_ITG3200 = 4,
-	I2C_ADXL345 = 5,
-	I2C_BMP085 = 6,
-	I2C_MS5803 = 7,
-};
-
 class SimpleCommunicator_t {
 public:
 	struct State_t {
