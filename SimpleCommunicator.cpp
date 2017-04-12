@@ -409,7 +409,8 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_motors_state.M3Force)
 				->WriteFloat(_motors_state.M4Force)
 				->WriteFloat(_motors_state.M5Force)
-				->WriteFloat(_motors_state.M6Force);
+				->WriteFloat(_motors_state.M6Force)
+			;
 			break;
 		case MCT_VECTOR:
 			_connection_provider
@@ -419,7 +420,8 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_movement_force.y_force)
 				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force)
 				->WriteFloat(_yaw_control_type == CT_AUTO ? _yaw : _yaw_force)
-				->WriteFloat(_pitch_control_type == CT_AUTO ? _pitch : _pitch_force);
+				->WriteFloat(_pitch_control_type == CT_AUTO ? _pitch : _pitch_force)
+			;
 			break;
 		default:;
 		}
@@ -438,7 +440,8 @@ void SimpleCommunicator_t::_Sender() {
 
 				->WriteFloat(_yaw_pid.P)
 				->WriteFloat(_yaw_pid.I)
-				->WriteFloat(_yaw_pid.D);
+				->WriteFloat(_yaw_pid.D)
+			;
 		}
 
 		_connection_provider->EndPacket();
