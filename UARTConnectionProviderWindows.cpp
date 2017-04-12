@@ -90,8 +90,31 @@ void UARTConnectionProvider_t::Begin() {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
 	}
 	serialParams.BaudRate = _baud_rate;
-	serialParams.fNull = false;
-	serialParams.fBinary = true;
+	serialParams.fBinary = 1;
+	serialParams.fParity = 0;
+	serialParams.fOutxCtsFlow = 0;
+	serialParams.fOutxDsrFlow = 0;
+	serialParams.fDtrControl = 1;
+	serialParams.fDsrSensitivity = 0;
+	serialParams.fTXContinueOnXoff = 0;
+	serialParams.fOutX = 0;
+	serialParams.fInX = 0;
+	serialParams.fErrorChar = 0;
+	serialParams.fNull = 0;
+	serialParams.fRtsControl = 1;
+	serialParams.fAbortOnError = 0;
+	serialParams.fDummy2 = 0;
+	serialParams.wReserved = 0;
+	serialParams.XonLim = 2048;
+	serialParams.XoffLim = 512;
+	serialParams.ByteSize = 8;
+	serialParams.Parity = 0;
+	serialParams.StopBits = 0;
+	serialParams.XonChar = 17;
+	serialParams.XoffChar = 19;
+	serialParams.ErrorChar = 0;
+	serialParams.EofChar = 26;
+	serialParams.EvtChar = 26;
 	if (!SetCommState(_h_com_port, &serialParams)) {
 		throw CantOpenPortException_t(_com_port_name, GetLastError());
 	}
