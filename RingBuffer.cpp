@@ -5,6 +5,7 @@
 RingBuffer_t::RingBuffer_t(size_t buffer_size) {
 	_buffer = static_cast<char*>(malloc(buffer_size));
 	_buffer_size = buffer_size;
+	_write_head = _read_head = 0;
 }
 
 RingBuffer_t::~RingBuffer_t() {
