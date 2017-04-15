@@ -81,6 +81,7 @@ int main() {
 
 
 		float thrust[6] = { 0, 0, 0, 0, 0, 0 };
+		float manipulator[2] = { 0, 0 };
 
 		communicator->Begin();
 		while (std::cin >> c) {
@@ -95,6 +96,24 @@ int main() {
 				std::cin >> thrust[m_id];
 				communicator->SetMotorsState(thrust[0], thrust[1], thrust[2], thrust[3], thrust[4], thrust[5]);
 			} break;
+			case 'g': {
+				int c_id;
+				std::cin >> c_id;
+				float pos;
+				std::cin >> pos;
+				if (c_id == 1) {
+					communicator->SetCamera1Pos(pos);
+				}
+				else if (c_id == 2) {
+					communicator->SetCamera2Pos(pos);
+				}
+			}
+			case 't': {
+				int d_id;
+				std::cin >> d_id;
+				std::cin >>	manipulator[d_id];
+				communicator->SetManipulatorState(manipulator[0], manipulator[1], 0, 0);
+			}
 			}
 		}
 	} catch(ControllerException_t& e) {
