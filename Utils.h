@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string.h>
 
 #define constrain(val, min, max) (val) > (max) ? (max) : (val) < (min) ? (min) : (val)
 

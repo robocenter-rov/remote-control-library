@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 class OutOfRangeException_t {};
 
 class RingBuffer_t {
