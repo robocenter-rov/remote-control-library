@@ -71,8 +71,17 @@ UARTConnectionProvider_t::~UARTConnectionProvider_t() {
 }
 
 void UARTConnectionProvider_t::Begin() {
+#ifdef UNICODE
+    wchar_t buffer[256];
+    swprintf(buffer, L"\\\\.\\%s", _com_port_name.c_str());
 	_h_com_port = CreateFile(
-		std::string("\\\\.\\" + _com_port_name).c_str(),
+        static_cast<LPCWSTR>(buffer),
+#else
+    char buffer[256];
+    sprintf(buffer, "\\\\.\\%s", _com_port_name.c_str());
+    _h_com_port = CreateFile(
+        static_cast<LPCSTR>(buffer),
+#endif
 		GENERIC_READ | GENERIC_WRITE,
 		0,
 		nullptr,
