@@ -66,7 +66,7 @@ void SimpleCommunicator_t::Stop() {
 	}
 }
 
-inline void SimpleCommunicator_t::SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6) {
+void SimpleCommunicator_t::SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6) {
 	_motors_directions.M1Dir = m1;
 	_motors_directions.M2Dir = m2;
 	_motors_directions.M3Dir = m3;
