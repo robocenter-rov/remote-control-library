@@ -109,31 +109,37 @@ void SimpleCommunicator_t::SetMovementForce(float x, float y) {
 void SimpleCommunicator_t::SetSinkingForce(float z) {
 	_sinking_force = z;
 	_depth_control_type = CT_DIRECT;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetDepth(float depth) {
 	_depth = depth;
 	_depth_control_type = CT_AUTO;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetPitchForce(float pitch_force) {
 	_pitch_force = pitch_force;
 	_pitch_control_type = CT_DIRECT;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetPitch(float pitch) {
 	_pitch = pitch;
 	_pitch_control_type = CT_AUTO;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetYawForce(float yaw_force) {
 	_yaw_force = yaw_force;
-	_yaw_control_type = CT_AUTO;
+	_yaw_control_type = CT_DIRECT;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetYaw(float yaw) {
 	_yaw = yaw;
-	_yaw_control_type = CT_DIRECT;
+	_yaw_control_type = CT_AUTO;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::ScanI2C() {
@@ -428,9 +434,15 @@ void SimpleCommunicator_t::_Sender() {
 			;
 			break;
 		case MCT_VECTOR:
+			struct {
+				bool auto_depth : 1;
+				bool auto_yaw : 1;
+				bool auto_pitch : 1;
+			} control_type;
+			control_type = { _depth_control_type == CT_AUTO, _yaw_control_type == CT_AUTO, _pitch_control_type == CT_AUTO };
 			_connection_provider
 				->WriteUInt8(SBI_MOVEMENT)
-				->WriteUInt8((_depth_control_type == CT_AUTO) | (_yaw_control_type == CT_AUTO) << 1 | (_pitch_control_type == CT_AUTO) << 2)
+				->WriteVar(control_type)
 				->WriteFloat(_movement_force.x_force)
 				->WriteFloat(_movement_force.y_force)
 				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force)
