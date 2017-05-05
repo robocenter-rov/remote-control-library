@@ -239,7 +239,7 @@ int UARTConnectionProvider_t::Receive() {
 		try {
 			_raw_receive_buffer.Write(buffer, readed_bytes);
 		} catch (OutOfRangeException_t) {
-			throw ReceiveBufferLimitExceeded_t();
+			_raw_receive_buffer.ClearWrite();
 		}
 	}
 
