@@ -35,6 +35,14 @@ void RingBuffer_t::Write(void* buffer, size_t size) {
 	_write_head += size;
 }
 
+void RingBuffer_t::ClearWrite() {
+	_write_head = _read_head;
+}
+
+void RingBuffer_t::ClearRead() {
+	_read_head = _write_head;
+}
+
 size_t RingBuffer_t::AvailableWrite() const {
 	return _read_head + _buffer_size - _write_head;
 }

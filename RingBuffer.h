@@ -15,6 +15,8 @@ public:
 	~RingBuffer_t();
 	int GetChar();
 	void Write(void* buffer, size_t size);
+	void ClearWrite();
+	void ClearRead();
 	size_t AvailableWrite() const;
 	size_t AvailableRead() const;
 };
