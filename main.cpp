@@ -15,6 +15,8 @@ int main() {
 	ConnectionProvider_t* connection_provider = new UARTConnectionProvider_t(com_port_name, 115200, 1024, 1024);
 	SimpleCommunicator_t* communicator = new SimpleCommunicator_t(connection_provider);
 
+	bool orientation = false;
+
 	try {
 		connection_provider->Begin();
 		communicator->OnRobotRestart([]()
@@ -33,13 +35,15 @@ int main() {
 				printf("Disconnected\n");
 			}
 		});
-		communicator->OnOrientationReceive([](SimpleCommunicator_t::Orientation_t o)
+		communicator->OnOrientationReceive([&](SimpleCommunicator_t::Orientation_t o)
 		{
 			float angles[3];
-			angles[0] = atan2(2 * o.q2 * o.q3 - 2 * o.q1 * o.q4, 2 * o.q1 * o.q1 + 2 * o.q2 * o.q2 - 1); // psi
-			angles[1] = -asin(2 * o.q2 * o.q4 + 2 * o.q1 * o.q3); // theta
-			angles[2] = atan2(2 * o.q3 * o.q4 - 2 * o.q1 * o.q2, 2 * o.q1 * o.q1 + 2 * o.q4 * o.q4 - 1); // phi
-			//printf("Orientation: %f, %f, %f\r", angles[0], angles[1], angles[2]);
+			if (orientation) {
+				angles[0] = atan2(2 * o.q2 * o.q3 - 2 * o.q1 * o.q4, 2 * o.q1 * o.q1 + 2 * o.q2 * o.q2 - 1); // psi
+				angles[1] = -asin(2 * o.q2 * o.q4 + 2 * o.q1 * o.q3); // theta
+				angles[2] = atan2(2 * o.q3 * o.q4 - 2 * o.q1 * o.q2, 2 * o.q1 * o.q1 + 2 * o.q4 * o.q4 - 1); // phi
+				printf("Orientation: %f, %f, %f\r", angles[0], angles[1], angles[2]);
+			}
 		});
 		float gyro_x = 0, gyro_y = 0, gyro_z = 0;
 		int n = 0;
@@ -97,9 +101,10 @@ int main() {
 		bool receive_calibrated_sensor_data = false;
 		bool read_bluetooth = false;
 
-
 		float thrust[6] = { 0, 0, 0, 0, 0, 0 };
 		float manipulator[2] = { 0, 0 };
+
+		float x = 0, y = 0;
 
 		communicator->Begin();
 		while (std::cin >> c) {
@@ -113,6 +118,49 @@ int main() {
 				std::cin >> m_id;
 				std::cin >> thrust[m_id];
 				communicator->SetMotorsState(thrust[0], thrust[1], thrust[2], thrust[3], thrust[4], thrust[5]);
+			} break;
+			case 'd': {
+				char d;
+				std::cin >> d;
+				float v;
+				std::cin >> v;
+				if (d == 'x') {
+					x = v;
+				} else if (d == 'y') {
+					y = v;
+				}
+
+				communicator->SetMovementForce(x, y);
+			} break;
+			case 'a': {
+				char r;
+				std::cin >> r;
+				float v;
+				std::cin >> v;
+				if (r == 'y') {
+					communicator->SetYaw(v);
+				}
+				else if (r == 'p') {
+					communicator->SetPitch(v);
+				}
+				else if (r == 'd') {
+					communicator->SetDepth(v);
+				}
+			} break;
+			case 'q': {
+				char r;
+				std::cin >> r;
+				float v;
+				std::cin >> v;
+				if (r == 'y') {
+					communicator->SetYawForce(v);
+				}
+				else if (r == 'p') {
+					communicator->SetPitchForce(v);
+				}
+				else if (r == 'd') {
+					communicator->SetSinkingForce(v);
+				}
 			} break;
 			case 'g': {
 				int c_id;
@@ -135,6 +183,9 @@ int main() {
 			case 'b': {
 				communicator->SetReadBluetoothState(read_bluetooth = !read_bluetooth);
 			} break;
+			case 'o': {
+				orientation = !orientation;
+			}
 			}
 		}
 	} catch(ControllerException_t& e) {
