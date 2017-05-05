@@ -78,7 +78,7 @@ void UARTConnectionProvider_t::Begin() {
         static_cast<LPCWSTR>(buffer),
 #else
     char buffer[256];
-    sprintf(buffer, "\\\\.\\%s", _com_port_name.c_str());
+    sprintf_s(buffer, "\\\\.\\%s", _com_port_name.c_str());
     _h_com_port = CreateFile(
         static_cast<LPCSTR>(buffer),
 #endif
