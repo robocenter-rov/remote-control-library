@@ -71,6 +71,10 @@ UARTConnectionProvider_t::~UARTConnectionProvider_t() {
 }
 
 void UARTConnectionProvider_t::Begin() {
+    if (_h_com_port) {
+        return;
+    }
+
 #ifdef UNICODE
     wchar_t buffer[256];
     swprintf(buffer, L"\\\\.\\%s", _com_port_name.c_str());
