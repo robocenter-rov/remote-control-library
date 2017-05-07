@@ -183,6 +183,10 @@ void SimpleCommunicator_t::SetReceiveCalibratedSensorData(bool receive) {
 	_state.SendCalibratedSensorData = receive;
 }
 
+void SimpleCommunicator_t::SetReceivePidState(bool receive) {
+	_state.SendPidState = receive;
+}
+
 void SimpleCommunicator_t::SetRescanI2CDevices() {
 	_last_i2c_scan++;
 }
@@ -201,8 +205,8 @@ void SimpleCommunicator_t::OnRobotRestart(std::function<void()> on_robot_restart
 
 void SimpleCommunicator_t::_UpdatePidHash() {
 	_pid_hash = HashLy(_depth_pid, 0);
-	_pid_hash = HashLy(_pitch_pid, _pid_hash);
 	_pid_hash = HashLy(_yaw_pid, _pid_hash);
+	_pid_hash = HashLy(_pitch_pid, _pid_hash);
 }
 
 void SimpleCommunicator_t::_Receiver() {
@@ -335,20 +339,20 @@ void SimpleCommunicator_t::_Receiver() {
 						depth_pid.Target = dr.GetFloat();
 						depth_pid.Out = dr.GetFloat();
 
-						PidState_t pitch_pid;
-
-						pitch_pid.In = dr.GetFloat();
-						pitch_pid.Target = dr.GetFloat();
-						pitch_pid.Out = dr.GetFloat();
-
 						PidState_t yaw_pid;
 
 						yaw_pid.In = dr.GetFloat();
 						yaw_pid.Target = dr.GetFloat();
 						yaw_pid.Out = dr.GetFloat();
 
+						PidState_t pitch_pid;
+
+						pitch_pid.In = dr.GetFloat();
+						pitch_pid.Target = dr.GetFloat();
+						pitch_pid.Out = dr.GetFloat();
+
 						if (_on_pid_state_receive) {
-							_on_pid_state_receive(depth_pid, pitch_pid, yaw_pid);
+							_on_pid_state_receive(depth_pid, yaw_pid, pitch_pid);
 						}
 					}
 					break;
@@ -461,13 +465,13 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_depth_pid.I)
 				->WriteFloat(_depth_pid.D)
 
-				->WriteFloat(_pitch_pid.P)
-				->WriteFloat(_pitch_pid.I)
-				->WriteFloat(_pitch_pid.D)
-
 				->WriteFloat(_yaw_pid.P)
 				->WriteFloat(_yaw_pid.I)
 				->WriteFloat(_yaw_pid.D)
+
+				->WriteFloat(_pitch_pid.P)
+				->WriteFloat(_pitch_pid.I)
+				->WriteFloat(_pitch_pid.D)
 			;
 		}
 
@@ -512,6 +516,10 @@ void SimpleCommunicator_t::OnRawSensorDataReceive(std::function<void(RawSensorDa
 
 void SimpleCommunicator_t::OnCalibratedSensorDataReceive(std::function<void(CalibratedSensorData_t)> on_calibrated_sensor_data_receive) {
 	_on_calibrated_sensor_data_receive = on_calibrated_sensor_data_receive;
+}
+
+void SimpleCommunicator_t::OnPidStateReceive(std::function<void(PidState_t, PidState_t, PidState_t)> on_pid_state_receive) {
+	_on_pid_state_receive = on_pid_state_receive;
 }
 
 void SimpleCommunicator_t::OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive) {

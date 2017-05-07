@@ -202,6 +202,7 @@ public:
 	void SetYawPid(float p, float i, float d);
 	void SetReceiveRawSensorData(bool receive);
 	void SetReceiveCalibratedSensorData(bool receive);
+	void SetReceivePidState(bool receive);
 	void SetRescanI2CDevices();
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
@@ -214,6 +215,7 @@ public:
 	void OnDepthReceive(std::function<void(float)> on_depth_receive);
 	void OnRawSensorDataReceive(std::function<void(RawSensorData_t)> on_raw_sensor_data_receive);
 	void OnCalibratedSensorDataReceive(std::function<void(CalibratedSensorData_t)> on_calibrated_sensor_data_receive);
+	void OnPidStateReceive(std::function<void(PidState_t, PidState_t, PidState_t)> on_pid_state_receive);
 	void OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive);
 	void OnStop(std::function<void(std::string)> on_stop);
 };
