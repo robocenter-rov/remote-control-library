@@ -2,6 +2,11 @@
 #include "ConnectionProvider.h"
 #include <thread>
 
+class WrongMotorsPosition_t : public ControllerException_t {
+public:
+	WrongMotorsPosition_t() : ControllerException_t("Wrong motors position") {};
+};
+
 class SimpleCommunicator_t {
 public:
 	struct State_t {
@@ -90,14 +95,27 @@ public:
 private:
 	ConnectionProvider_t* _connection_provider;
 
+#pragma pack(1)
 	struct {
-		bool M1Dir : 1;
-		bool M2Dir : 1;
-		bool M3Dir : 1;
-		bool M4Dir : 1;
-		bool M5Dir : 1;
-		bool M6Dir : 1;
-	} _motors_directions;
+		struct {
+			char M1Pos : 3;
+			char M2Pos : 3;
+			char M3Pos : 3;
+			char M4Pos : 3;
+			char M5Pos : 3;
+			char M6Pos : 3;
+		} MPositions;
+
+		struct {
+			float M1mul;
+			float M2mul;
+			float M3mul;
+			float M4mul;
+			float M5mul;
+			float M6mul;
+		} MMultipliers;
+	} _motors_config;
+#pragma pack(pop)
 
 	MotorsState_t _motors_state;
 
@@ -139,6 +157,9 @@ private:
 	uint32_t _pid_hash;
 	uint32_t _remote_pid_hash;
 
+	uint32_t _motors_config_hash;
+	uint32_t _remote_motors_config_hash;
+
 	uint32_t _last_received_msg_number;
 	uint32_t _last_sended_msg_number;
 
@@ -174,6 +195,7 @@ private:
 	std::function<void(std::string)> _on_stop;
 
 	void _UpdatePidHash();
+	void _UpdateMotorsConfigHash();
 
 	void _Receiver();
 	void _Sender();
@@ -182,7 +204,8 @@ public:
 
 	void Begin();
 	void Stop();
-	void SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6);
+	void SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6);
+	void SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6);
 	void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2);
 	void SetCamera1Pos(float camera1);
 	void SetCamera2Pos(float camera2);

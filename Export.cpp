@@ -16,10 +16,14 @@ extern "C" {
 		simple_communicator_wrapper->Stop();
 	}
 
-	__declspec(dllexport) void SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6) {
-		simple_communicator_wrapper->SetMotorsDirection(m1, m2, m3, m4, m5, m6);
+	__declspec(dllexport) void SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6) {
+		simple_communicator_wrapper->SetMotorsMultiplier(m1, m2, m3, m4, m5, m6);
 	}
 
+	__declspec(dllexport) void SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6) {
+		simple_communicator_wrapper->SetMotorsPositions(m1, m2, m3, m4, m5, m6);
+	}
+	
 	__declspec(dllexport) void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2) {
 		simple_communicator_wrapper->SetManipulatorState(arm_pos, hand_pos, m1, m2);
 	}

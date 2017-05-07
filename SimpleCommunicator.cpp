@@ -21,6 +21,7 @@ enum SEND_BLOCK_IDS {
 	SBI_MOTORS_STATE = 2,
 	SBI_MOVEMENT = 3,
 	SBI_PID = 4,
+	SBI_MOTORS_CONFIG = 5,
 };
 
 SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_provider) {
@@ -44,10 +45,30 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_pid_hash = 0;
 	_remote_pid_hash = 0;
 	_remote_packets_leak = 0;
+	_motors_config_hash = 0;
+	_remote_motors_config_hash = 0;
 	_camera1_pos = 0;
 	_camera2_pos = 0;
 
-	_receive_time_out = std::chrono::milliseconds(700);
+	memset(&_motors_config, 0, sizeof _motors_config);
+
+	_motors_config.MPositions.M1Pos = 0;
+	_motors_config.MPositions.M1Pos = 1;
+	_motors_config.MPositions.M1Pos = 2;
+	_motors_config.MPositions.M1Pos = 3;
+	_motors_config.MPositions.M1Pos = 4;
+	_motors_config.MPositions.M1Pos = 5;
+
+	_motors_config.MMultipliers.M1mul = 1;
+	_motors_config.MMultipliers.M2mul = 1;
+	_motors_config.MMultipliers.M3mul = 1;
+	_motors_config.MMultipliers.M4mul = 1;
+	_motors_config.MMultipliers.M5mul = 1;
+	_motors_config.MMultipliers.M6mul = 1;
+
+	_UpdatePidHash();
+
+	_receive_time_out = std::chrono::milliseconds(1000);
 	_send_frequency = std::chrono::milliseconds(15);
 }
 
@@ -68,13 +89,38 @@ void SimpleCommunicator_t::Stop() {
 	}
 }
 
-void SimpleCommunicator_t::SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6) {
-	_motors_directions.M1Dir = m1;
-	_motors_directions.M2Dir = m2;
-	_motors_directions.M3Dir = m3;
-	_motors_directions.M4Dir = m4;
-	_motors_directions.M5Dir = m5;
-	_motors_directions.M6Dir = m6;
+void SimpleCommunicator_t::SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6) {
+	_motors_config.MMultipliers.M1mul = m1;
+	_motors_config.MMultipliers.M2mul = m2;
+	_motors_config.MMultipliers.M3mul = m3;
+	_motors_config.MMultipliers.M4mul = m4;
+	_motors_config.MMultipliers.M5mul = m5;
+	_motors_config.MMultipliers.M6mul = m6;
+
+	_UpdateMotorsConfigHash();
+}
+
+void SimpleCommunicator_t::SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6) {
+	int m_pos[] = { m1, m2, m3, m4, m5, m6 };
+	for (int i = 0; i < 6; i++) {
+		if (m_pos[i] < 0 || m_pos[i] > 5) {
+			throw WrongMotorsPosition_t();
+		}
+		for (int j = 0; j < 6; j++) {
+			if (i != j && m_pos[i] == m_pos[j]) {
+				throw WrongMotorsPosition_t();
+			}
+		}
+	}
+
+	_motors_config.MPositions.M1Pos = m1;
+	_motors_config.MPositions.M2Pos = m2;
+	_motors_config.MPositions.M3Pos = m3;
+	_motors_config.MPositions.M4Pos = m4;
+	_motors_config.MPositions.M5Pos = m5;
+	_motors_config.MPositions.M6Pos = m6;
+
+	_UpdateMotorsConfigHash();
 }
 
 void SimpleCommunicator_t::SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2) {
@@ -211,6 +257,10 @@ void SimpleCommunicator_t::_UpdatePidHash() {
 	_pid_hash = HashLy(_pitch_pid, _pid_hash);
 }
 
+void SimpleCommunicator_t::_UpdateMotorsConfigHash() {
+	_motors_config_hash = HashLy(_motors_config, 0);
+}
+
 void SimpleCommunicator_t::_Receiver() {
 	try {
 	while (true) {
@@ -219,7 +269,7 @@ void SimpleCommunicator_t::_Receiver() {
 		}
 
 		int readed_bytes = 0;
-		if (readed_bytes = _connection_provider->Receive()) {
+		if ((readed_bytes = _connection_provider->Receive())) {
 			try {
 				auto dr = DataReader_t(_connection_provider->ReceiveBuffer(), readed_bytes);
 
@@ -263,6 +313,7 @@ void SimpleCommunicator_t::_Receiver() {
 						_last_i2c_scan_remote = i2c_scan_token;
 
 						_remote_pid_hash = dr.GetVar<uint32_t>();
+						_remote_motors_config_hash = dr.GetVar<uint32_t>();
 					}
 					break;
 					case RBI_SENSOR_DATA: {
@@ -484,6 +535,21 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_pitch_pid.P)
 				->WriteFloat(_pitch_pid.I)
 				->WriteFloat(_pitch_pid.D)
+			;
+		}
+
+		if (_remote_motors_config_hash != _motors_config_hash) {
+			_connection_provider
+				->WriteUInt8(SBI_MOTORS_CONFIG)
+
+				->WriteVar(_motors_config.MPositions)
+
+				->WriteFloat(_motors_config.MMultipliers.M1mul)
+				->WriteFloat(_motors_config.MMultipliers.M2mul)
+				->WriteFloat(_motors_config.MMultipliers.M3mul)
+				->WriteFloat(_motors_config.MMultipliers.M4mul)
+				->WriteFloat(_motors_config.MMultipliers.M5mul)
+				->WriteFloat(_motors_config.MMultipliers.M6mul)
 			;
 		}
 

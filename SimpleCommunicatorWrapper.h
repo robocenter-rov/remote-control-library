@@ -24,7 +24,8 @@ public:
 
 	void Begin();
 	void Stop() const;
-	void SetMotorsDirection(bool m1, bool m2, bool m3, bool m4, bool m5, bool m6) const;
+	void SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6) const;
+	void SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6) const;
 	void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2) const;
 	void SetCamera1Pos(float camera1) const;
 	void SetCamera2Pos(float camera2) const;
