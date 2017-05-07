@@ -1,7 +1,9 @@
 #include "SimpleCommunicator.h"
 #include "DataReader.h"
 #include "Utils.h"
-#include <complex>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 enum RECEIVE_BLOCK_IDS {
 	RBI_STATE = 0,
@@ -45,8 +47,8 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_camera1_pos = 0;
 	_camera2_pos = 0;
 
-	_receive_time_out = std::chrono::milliseconds(500);
-	_send_frequency = std::chrono::milliseconds(20);
+	_receive_time_out = std::chrono::milliseconds(700);
+	_send_frequency = std::chrono::milliseconds(15);
 }
 
 void SimpleCommunicator_t::Begin() {
@@ -417,24 +419,24 @@ void SimpleCommunicator_t::_Sender() {
 			->WriteVar(_state)
 			->WriteUInt8(_last_i2c_scan)
 			->WriteUInt8(SBI_DEVICES_STATE)
-			->WriteFloat(_manipulator_state.ArmPos)
-			->WriteFloat(_manipulator_state.HandPos)
-			->WriteFloat(_manipulator_state.M1)
-			->WriteFloat(_manipulator_state.M2)
-			->WriteFloat(_camera1_pos)
-			->WriteFloat(_camera2_pos)
+			->WriteFloatAs<char>(_manipulator_state.ArmPos, -1, 1)
+			->WriteFloatAs<char>(_manipulator_state.HandPos, -1, 1)
+			->WriteFloatAs<char>(_manipulator_state.M1, 0, M_PI * 2)
+			->WriteFloatAs<char>(_manipulator_state.M2, 0, M_PI * 2)
+			->WriteFloatAs<char>(_camera1_pos, 0, M_PI * 2)
+			->WriteFloatAs<char>(_camera2_pos, 0, M_PI * 2)
 		;
 
 		switch (_movement_control_type) {
 		case MCT_DIRECT:
 			_connection_provider
 				->WriteUInt8(SBI_MOTORS_STATE)
-				->WriteFloat(_motors_state.M1Force)
-				->WriteFloat(_motors_state.M2Force)
-				->WriteFloat(_motors_state.M3Force)
-				->WriteFloat(_motors_state.M4Force)
-				->WriteFloat(_motors_state.M5Force)
-				->WriteFloat(_motors_state.M6Force)
+				->WriteFloatAs<char>(_motors_state.M1Force, -1, 1)
+				->WriteFloatAs<char>(_motors_state.M2Force, -1, 1)
+				->WriteFloatAs<char>(_motors_state.M3Force, -1, 1)
+				->WriteFloatAs<char>(_motors_state.M4Force, -1, 1)
+				->WriteFloatAs<char>(_motors_state.M5Force, -1, 1)
+				->WriteFloatAs<char>(_motors_state.M6Force, -1, 1)
 			;
 			break;
 		case MCT_VECTOR:
@@ -447,11 +449,21 @@ void SimpleCommunicator_t::_Sender() {
 			_connection_provider
 				->WriteUInt8(SBI_MOVEMENT)
 				->WriteVar(control_type)
-				->WriteFloat(_movement_force.x_force)
-				->WriteFloat(_movement_force.y_force)
-				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force)
-				->WriteFloat(_yaw_control_type == CT_AUTO ? _yaw : _yaw_force)
-				->WriteFloat(_pitch_control_type == CT_AUTO ? _pitch : _pitch_force)
+				->WriteFloatAs<char>(_movement_force.x_force, -2, 2)
+				->WriteFloatAs<char>(_movement_force.y_force, -2, 2)
+				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force);
+				
+				if (_yaw_control_type == CT_AUTO) {
+					_connection_provider->WriteFloatAs<char>(_yaw, -M_PI, M_PI);
+				} else {
+					_connection_provider->WriteFloatAs<char>(_yaw_force, -1, 1);
+				}
+
+				if (_pitch_control_type == CT_AUTO) {
+					_connection_provider->WriteFloatAs<char>(_pitch, -M_PI, M_PI);
+				} else {
+					_connection_provider->WriteFloatAs<char>(_pitch_force, -1, 1);
+				}
 			;
 			break;
 		default:;

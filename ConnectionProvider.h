@@ -1,6 +1,7 @@
 #pragma once
 #include <exception>
 #include "Exception.h"
+#include "Utils.h"
 
 class ConnectionProviderException_t : public ControllerException_t {
 public:
@@ -29,6 +30,9 @@ public:
 	template<typename T>
 	ConnectionProvider_t* WriteVar(T var);
 
+	template<typename T>
+	ConnectionProvider_t* WriteFloatAs(float val, float in_min, float in_max);
+
 	virtual ConnectionProvider_t* BeginPacket() = 0;
 	virtual ConnectionProvider_t* EndPacket() = 0;
 	virtual ConnectionProvider_t* Send(const void* buffer, size_t size);
@@ -39,5 +43,18 @@ public:
 
 template <typename T>
 ConnectionProvider_t* ConnectionProvider_t::WriteVar(T var) {
+	//printf("WriteVar, size: %d\n", sizeof(T));
 	return Write(&var, sizeof(T));
+}
+
+template <typename T>
+ConnectionProvider_t* ConnectionProvider_t::WriteFloatAs(float val, float in_min, float in_max) {
+	val = constrain(val, in_min, in_max);
+
+	T out_min = std::numeric_limits<T>::min();
+	T out_max = std::numeric_limits<T>::max();
+
+	T res = (val - in_min) / (in_max - in_min) * (out_max - out_min) + out_min;
+
+	return WriteVar(res);
 }
