@@ -202,6 +202,7 @@ private:
 	std::function<void(PidState_t, PidState_t, PidState_t)> _on_pid_state_receive;
 	std::function<void(MotorsState_t)> _on_motors_state_receive;
 	std::function<void(std::string)> _on_stop;
+	std::function<void(unsigned long)> _on_msg_receive;
 
 	void _UpdatePidHash();
 	void _UpdateMotorsConfigHash();
@@ -258,4 +259,5 @@ public:
 	void OnPidStateReceive(std::function<void(PidState_t, PidState_t, PidState_t)> on_pid_state_receive);
 	void OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive);
 	void OnStop(std::function<void(std::string)> on_stop);
+	void OnMessageReceive(std::function<void(unsigned long)> on_msg_receive);
 };

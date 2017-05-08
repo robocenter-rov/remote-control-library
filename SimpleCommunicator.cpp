@@ -464,6 +464,10 @@ void SimpleCommunicator_t::_Receiver() {
 				printf("Too short buffer\n");
 			}
 
+			if (_on_msg_receive)                                                      {
+				_on_msg_receive(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - _last_received_msg_time).count());
+			}
+
 			_last_received_msg_time = std::chrono::system_clock::now();
 		}
 
@@ -640,4 +644,8 @@ void SimpleCommunicator_t::OnMotorsStateReceive(std::function<void(MotorsState_t
 
 void SimpleCommunicator_t::OnStop(std::function<void(std::string)> on_stop) {
 	_on_stop = on_stop;
+}
+
+void SimpleCommunicator_t::OnMessageReceive(std::function<void(unsigned long)> on_msg_receive) {
+	_on_msg_receive = on_msg_receive;
 }
