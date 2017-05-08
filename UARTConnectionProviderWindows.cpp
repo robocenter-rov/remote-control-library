@@ -1,5 +1,6 @@
 #include "UARTConnectionProviderWindows.h"
 #include "Utils.h"
+#include <chrono>
 
 #define END             0300    /* indicates end of packet */
 #define ESC             0333    /* indicates byte stuffing */
@@ -90,7 +91,7 @@ void UARTConnectionProvider_t::Begin() {
 		0,
 		nullptr,
 		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
+		FILE_FLAG_OVERLAPPED,
 		nullptr
 	);
 	if (_h_com_port == INVALID_HANDLE_VALUE) {
@@ -206,15 +207,28 @@ ConnectionProvider_t* UARTConnectionProvider_t::EndPacket() {
 	WriteToSendBuffer(END);
 	DWORD written_bytes;
 
-	if (!WriteFile(
-		_h_com_port,
-		_send_buffer,
-		_send_head,
-		&written_bytes,
-		nullptr
-	)) {
-		throw PortClosedException_t(_com_port_name);
+	auto t = std::chrono::system_clock::now();
+
+	OVERLAPPED osWrite = { 0 };
+	DWORD dwWritten;
+	BOOL fRes;
+
+	// Create this writes OVERLAPPED structure hEvent.
+	osWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (osWrite.hEvent == NULL)
+		// Error creating overlapped event handle.
+		return FALSE;
+
+	// Issue write.
+	if (!WriteFile(_h_com_port, _send_buffer, _send_head, &written_bytes, &osWrite)) {
+		if (GetLastError() != ERROR_IO_PENDING || !GetOverlappedResult(_h_com_port, &osWrite, &written_bytes, TRUE)) {
+			throw PortClosedException_t(_com_port_name);
+		}
 	}
+
+	CloseHandle(osWrite.hEvent);
+
+	//printf("%lld\n", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - t).count());
 
 	_send_head = 0;
 	return this;
@@ -224,21 +238,25 @@ int UARTConnectionProvider_t::Receive() {
 	if (!_raw_receive_buffer.AvailableRead()) {
 		const size_t temp_recv_buff_size = 128;
 		uint8_t buffer[temp_recv_buff_size];
-		DWORD readed_bytes;
+		DWORD readed_bytes = 0;
 
-		if (!ReadFile(
-			_h_com_port,
-			buffer,
-			temp_recv_buff_size,
-			&readed_bytes,
-			nullptr
-		)) {
+		OVERLAPPED osReader = { 0 };
+
+		// Create the overlapped event. Must be closed before exiting
+		// to avoid a handle leak.
+		osReader.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+		if (osReader.hEvent == NULL) {
 			throw PortClosedException_t(_com_port_name);
-		}/*
-		printf("Bytes readed: %d", readed_bytes);
-		for (int i = 0; i < readed_bytes; i++) {
-			printf("Raw received: %X\n", (uint32_t)buffer[i]);
-		}*/
+		}
+
+		if (!ReadFile(_h_com_port, buffer, temp_recv_buff_size, &readed_bytes, &osReader)) {
+			if (GetLastError() != ERROR_IO_PENDING || !GetOverlappedResult(_h_com_port, &osReader, &readed_bytes, TRUE)) {
+				throw PortClosedException_t(_com_port_name);
+			} 
+		}
+
+		CloseHandle(osReader.hEvent);
 
 		try {
 			_raw_receive_buffer.Write(buffer, readed_bytes);
