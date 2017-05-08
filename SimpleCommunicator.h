@@ -104,12 +104,12 @@ private:
 #pragma pack(1)
 	struct {
 		struct {
-			char M1Pos : 3;
-			char M2Pos : 3;
-			char M3Pos : 3;
-			char M4Pos : 3;
-			char M5Pos : 3;
-			char M6Pos : 3;
+			unsigned char M1Pos;
+			unsigned char M2Pos;
+			unsigned char M3Pos;
+			unsigned char M4Pos;
+			unsigned char M5Pos;
+			unsigned char M6Pos;
 		} MPositions;
 
 		struct {
