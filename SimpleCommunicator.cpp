@@ -48,16 +48,14 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_motors_config_hash = 0;
 	_remote_motors_config_hash = 0;
 	_camera1_pos = 0;
-	_camera2_pos = 0;
-
-	memset(&_motors_config, 0, sizeof _motors_config);
+    _camera2_pos = 0;
 
 	_motors_config.MPositions.M1Pos = 0;
-	_motors_config.MPositions.M1Pos = 1;
-	_motors_config.MPositions.M1Pos = 2;
-	_motors_config.MPositions.M1Pos = 3;
-	_motors_config.MPositions.M1Pos = 4;
-	_motors_config.MPositions.M1Pos = 5;
+    _motors_config.MPositions.M2Pos = 1;
+    _motors_config.MPositions.M3Pos = 2;
+    _motors_config.MPositions.M4Pos = 3;
+    _motors_config.MPositions.M5Pos = 4;
+    _motors_config.MPositions.M6Pos = 5;
 
 	_motors_config.MMultipliers.M1mul = 1;
 	_motors_config.MMultipliers.M2mul = 1;
