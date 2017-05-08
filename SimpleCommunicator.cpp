@@ -346,6 +346,11 @@ void SimpleCommunicator_t::_Receiver() {
 
 						_remote_pid_hash = dr.GetVar<uint32_t>();
 						_remote_motors_config_hash = dr.GetVar<uint32_t>();
+						uint16_t arduino_loop_frequency = dr.GetVar<uint16_t>();
+
+						if (_on_remote_processor_load_receive) {
+							_on_remote_processor_load_receive(arduino_loop_frequency);
+						}
 					}
 					break;
 					case RBI_SENSOR_DATA: {
@@ -648,4 +653,8 @@ void SimpleCommunicator_t::OnStop(std::function<void(std::string)> on_stop) {
 
 void SimpleCommunicator_t::OnMessageReceive(std::function<void(unsigned long)> on_msg_receive) {
 	_on_msg_receive = on_msg_receive;
+}
+
+void SimpleCommunicator_t::OnRemoteProcessorLoad(std::function<void(unsigned long)> on_remote_processor_load_receive) {
+	_on_remote_processor_load_receive = on_remote_processor_load_receive;
 }
