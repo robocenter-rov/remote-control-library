@@ -171,6 +171,9 @@ private:
 
 	uint16_t _remote_packets_leak;
 
+	unsigned long _remote_send_frequency;
+	unsigned long _remote_receive_timeout;
+
 	std::chrono::system_clock::time_point _last_received_msg_time;
 	std::chrono::system_clock::time_point _last_sended_msg_time;
 
@@ -210,6 +213,13 @@ public:
 
 	void Begin();
 	void Stop();
+
+	void SetSendMessageFrequency(unsigned long millis);
+	void SetReceiveTimeout(unsigned long millis);
+
+	void SetRemoteSendMessageFrequency(unsigned long millis);
+	void SetRemoteReceiveTimeout(unsigned long millis);
+
 	void SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6);
 	void SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6);
 	void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2);

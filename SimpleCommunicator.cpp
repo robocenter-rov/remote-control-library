@@ -70,6 +70,9 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 
 	_receive_time_out = std::chrono::milliseconds(1000);
 	_send_frequency = std::chrono::milliseconds(15);
+
+	_remote_send_frequency = 50;
+	_remote_receive_timeout = 500;
 }
 
 void SimpleCommunicator_t::Begin() {
@@ -87,6 +90,22 @@ void SimpleCommunicator_t::Stop() {
 	if (_on_stop) {
 		_on_stop(std::string());
 	}
+}
+
+void SimpleCommunicator_t::SetSendMessageFrequency(unsigned long millis) {
+	_send_frequency = std::chrono::milliseconds(millis);
+}
+
+void SimpleCommunicator_t::SetReceiveTimeout(unsigned long millis) {
+	_receive_time_out = std::chrono::milliseconds(millis);
+}
+
+void SimpleCommunicator_t::SetRemoteSendMessageFrequency(unsigned long millis) {
+	_remote_send_frequency = millis;
+}
+
+void SimpleCommunicator_t::SetRemoteReceiveTimeout(unsigned long millis) {
+	_remote_receive_timeout = millis;
 }
 
 void SimpleCommunicator_t::SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6) {
@@ -482,6 +501,8 @@ void SimpleCommunicator_t::_Sender() {
 			->WriteUInt8(SBI_STATE)
 			->WriteVar(_state)
 			->WriteUInt8(_last_i2c_scan)
+			->WriteUInt16(_remote_send_frequency)
+			->WriteUInt16(_remote_receive_timeout)
 			->WriteUInt8(SBI_DEVICES_STATE)
 			->WriteFloatAs<char>(_manipulator_state.ArmPos, -1, 1)
 			->WriteFloatAs<char>(_manipulator_state.HandPos, -1, 1)
