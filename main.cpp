@@ -90,21 +90,34 @@ int main() {
 		{
 			printf("Bluetooth message: %s\n", msg.c_str());
 		});
+		communicator->OnPidStateReceive([](SimpleCommunicator_t::PidState_t depth, SimpleCommunicator_t::PidState_t yaw, SimpleCommunicator_t::PidState_t pitch)
+		{
+			printf("Yaw pid state: input: %f, target: %f, output: %f\r", yaw.In, yaw.Target, yaw.Out);
+		});
 
 		communicator->OnStop([](std::string error)
 		{
 			printf("Error: %s", error.c_str());
+		});
+
+		communicator->OnMessageReceive([](unsigned long ping)
+		{
+			printf("Ping: %ld\r", ping);
 		});
 		char c;
 		bool flashlight_state = false;
 		bool receive_raw_sensor_data = false;
 		bool receive_calibrated_sensor_data = false;
 		bool read_bluetooth = false;
+		bool receive_pid = false;
 
 		float thrust[6] = { 0, 0, 0, 0, 0, 0 };
 		float manipulator[2] = { 0, 0 };
 
 		float x = 0, y = 0;
+
+		communicator->SetPitcPid(0.5, 0, 0);
+		communicator->SetSendMessageFrequency(15);
 
 		communicator->Begin();
 		while (std::cin >> c) {
@@ -128,6 +141,9 @@ int main() {
 					x = v;
 				} else if (d == 'y') {
 					y = v;
+				}
+				else if (d == 'z') {
+					communicator->SetSinkingForce(v);
 				}
 
 				communicator->SetMovementForce(x, y);
@@ -158,9 +174,6 @@ int main() {
 				else if (r == 'p') {
 					communicator->SetPitchForce(v);
 				}
-				else if (r == 'd') {
-					communicator->SetSinkingForce(v);
-				}
 			} break;
 			case 'g': {
 				int c_id;
@@ -185,6 +198,20 @@ int main() {
 			} break;
 			case 'o': {
 				orientation = !orientation;
+			} break;
+			case 'p': {
+				communicator->SetReceivePidState(receive_pid = !receive_pid);
+			}
+			case 'i': {
+				char v;
+				unsigned long t;
+				std::cin >> v;
+				std::cin >> t;
+				if (v == 's') {
+					communicator->SetSendMessageFrequency(t);
+				} else if (v == 'r') {
+					communicator->SetRemoteSendMessageFrequency(t);
+				}
 			}
 			}
 		}
