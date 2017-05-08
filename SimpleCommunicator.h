@@ -7,6 +7,12 @@ public:
 	WrongMotorsPosition_t() : ControllerException_t("Wrong motors position") {};
 };
 
+class WrongMotorId_t : public ControllerException_t {
+public:
+	WrongMotorId_t() : ControllerException_t("Wrong motor id") {};
+};
+
+
 class SimpleCommunicator_t {
 public:
 	struct State_t {
@@ -210,6 +216,7 @@ public:
 	void SetCamera1Pos(float camera1);
 	void SetCamera2Pos(float camera2);
 	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6);
+	void SetMotorState(int motor_id, float force);
 	void SetMovementForce(float x, float y);
 	void SetSinkingForce(float z);
 	void SetDepth(float depth);
