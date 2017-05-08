@@ -172,7 +172,7 @@ void SimpleCommunicator_t::SetMotorState(int motor_id, float force) {
 		case 2: _motors_state.M3Force = force; break;
 		case 3: _motors_state.M4Force = force; break;
 		case 4: _motors_state.M5Force = force; break;
-		case 5: _motors_state.M5Force = force; break;
+        case 5: _motors_state.M6Force = force; break;
 		default: throw WrongMotorId_t();
 	}
 	_movement_control_type = MCT_DIRECT;
