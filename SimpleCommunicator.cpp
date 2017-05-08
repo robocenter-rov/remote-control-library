@@ -69,10 +69,10 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_UpdatePidHash();
 
 	_receive_time_out = std::chrono::milliseconds(1000);
-	_send_frequency = std::chrono::milliseconds(15);
+	_send_frequency = std::chrono::milliseconds(50);
 
 	_remote_send_frequency = 50;
-	_remote_receive_timeout = 500;
+	_remote_receive_timeout = 1000;
 }
 
 void SimpleCommunicator_t::Begin() {
