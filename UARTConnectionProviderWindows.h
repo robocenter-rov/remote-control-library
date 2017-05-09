@@ -5,8 +5,8 @@
 #include "RingBuffer.h"
 
 class CantOpenPortException_t : public ConnectionProviderException_t {
-	DWORD error_code;
 public:
+    DWORD error_code;
 	std::string port_name;
 	CantOpenPortException_t(std::string port_name, DWORD error_code);
 };
