@@ -207,11 +207,7 @@ ConnectionProvider_t* UARTConnectionProvider_t::EndPacket() {
 	WriteToSendBuffer(END);
 	DWORD written_bytes;
 
-	auto t = std::chrono::system_clock::now();
-
-	OVERLAPPED osWrite = { 0 };
-	DWORD dwWritten;
-	BOOL fRes;
+    OVERLAPPED osWrite = { 0 };
 
 	// Create this writes OVERLAPPED structure hEvent.
 	osWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
