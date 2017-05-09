@@ -64,6 +64,10 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_motors_config.MMultipliers.M5mul = 1;
 	_motors_config.MMultipliers.M6mul = 1;
 
+	memset(&_depth_pid, 0, sizeof _depth_pid);
+	memset(&_yaw_pid, 0, sizeof _yaw_pid);
+	memset(&_pitch_pid, 0, sizeof _pitch_pid);
+
 	_UpdatePidHash();
 
 	_receive_time_out = std::chrono::milliseconds(1000);
