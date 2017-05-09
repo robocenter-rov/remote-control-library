@@ -12,7 +12,7 @@ int main() {
 
 	std::cin >> com_port_name;
 
-	ConnectionProvider_t* connection_provider = new UARTConnectionProvider_t(com_port_name, 115200, 1024, 1024);
+	ConnectionProvider_t* connection_provider = new UARTConnectionProvider_t(com_port_name, 19200, 1024, 1024);
 	SimpleCommunicator_t* communicator = new SimpleCommunicator_t(connection_provider);
 
 	bool orientation = false;
@@ -102,7 +102,12 @@ int main() {
 
 		communicator->OnMessageReceive([](unsigned long ping)
 		{
-			printf("Ping: %ld\r", ping);
+			//printf("Ping: %ld\r", ping);
+		});
+
+		communicator->OnRemoteProcessorLoad([](unsigned long loop_frequency) 
+		{
+			printf("Loop frequency: %ld          \r", loop_frequency);
 		});
 		char c;
 		bool flashlight_state = false;
@@ -110,6 +115,7 @@ int main() {
 		bool receive_calibrated_sensor_data = false;
 		bool read_bluetooth = false;
 		bool receive_pid = false;
+		bool receive_loop = false;
 
 		float thrust[6] = { 0, 0, 0, 0, 0, 0 };
 		float manipulator[2] = { 0, 0 };
@@ -117,7 +123,7 @@ int main() {
 		float x = 0, y = 0;
 
 		communicator->SetPitcPid(0.5, 0, 0);
-		communicator->SetSendMessageFrequency(15);
+		communicator->SetSendMessageFrequency(50);
 
 		communicator->Begin();
 		while (std::cin >> c) {
@@ -201,7 +207,7 @@ int main() {
 			} break;
 			case 'p': {
 				communicator->SetReceivePidState(receive_pid = !receive_pid);
-			}
+			} break;
 			case 'i': {
 				char v;
 				unsigned long t;
@@ -212,12 +218,22 @@ int main() {
 				} else if (v == 'r') {
 					communicator->SetRemoteSendMessageFrequency(t);
 				}
-			}
+			} break;
+			case 'l': {
+				receive_loop = !receive_loop;
+			} break;
+			case 'y': {
+				communicator->SetMotorsPositions(0, 1, 2, 3, 4, 5);
+				communicator->SetMotorsMultiplier(0, 1, -1, -0.5, 0.3, 0.9);
+			} break;
 			}
 		}
 	} catch(ControllerException_t& e) {
 		printf("%s\n", e.error_message.c_str());
 	}
+
+	communicator->Stop();
+	connection_provider->Stop();
 
 	system("pause");
 
