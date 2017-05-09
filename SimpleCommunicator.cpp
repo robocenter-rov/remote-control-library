@@ -269,6 +269,10 @@ void SimpleCommunicator_t::SetReceivePidState(bool receive) {
 	_state.SendPidState = receive;
 }
 
+void SimpleCommunicator_t::SetReceiveMotorsState(bool receive) {
+	_state.SendMotorsState = receive;
+}
+
 void SimpleCommunicator_t::SetRescanI2CDevices() {
 	_last_i2c_scan++;
 }

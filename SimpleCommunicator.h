@@ -245,6 +245,7 @@ public:
 	void SetReceiveRawSensorData(bool receive);
 	void SetReceiveCalibratedSensorData(bool receive);
 	void SetReceivePidState(bool receive);
+	void SetReceiveMotorsState(bool receive);
 	void SetRescanI2CDevices();
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
