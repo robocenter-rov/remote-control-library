@@ -101,7 +101,7 @@ public:
 private:
 	ConnectionProvider_t* _connection_provider;
 
-#pragma pack(1)
+#pragma pack(push, 1)
 	struct {
 		struct {
 			unsigned char M1Pos;
