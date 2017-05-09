@@ -302,7 +302,7 @@ int UARTConnectionProvider_t::Receive() {
 		if (_received < _receive_buffer_size) {
 			_receive_buffer[_received++] = c;
 		} else {
-			throw ReceiveBufferLimitExceeded_t();
+			_received = 0;
 		}
 	}
 
