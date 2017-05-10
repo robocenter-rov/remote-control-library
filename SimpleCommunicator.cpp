@@ -556,13 +556,13 @@ void SimpleCommunicator_t::_Sender() {
 				if (_yaw_control_type == CT_AUTO) {
 					_connection_provider->WriteFloatAs<char>(_yaw, -M_PI, M_PI);
 				} else {
-					_connection_provider->WriteFloatAs<char>(_yaw_force, -1, 1);
+					_connection_provider->WriteFloatAs<char>(_yaw_force, -2, 2);
 				}
 
 				if (_pitch_control_type == CT_AUTO) {
 					_connection_provider->WriteFloatAs<char>(_pitch, -M_PI, M_PI);
 				} else {
-					_connection_provider->WriteFloatAs<char>(_pitch_force, -1, 1);
+					_connection_provider->WriteFloatAs<char>(_pitch_force, -2, 2);
 				}
 			;
 			break;
