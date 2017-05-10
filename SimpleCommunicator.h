@@ -243,6 +243,9 @@ public:
 	void SetReceivePidState(bool receive);
 	void SetReceiveMotorsState(bool receive);
 	void SetRescanI2CDevices();
+    bool IsAutoDepthEnabled();
+    bool IsAutoPitchEnabled();
+    bool IsAutoYawEnabled();
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);

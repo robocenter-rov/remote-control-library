@@ -271,7 +271,19 @@ void SimpleCommunicator_t::SetReceiveMotorsState(bool receive) {
 }
 
 void SimpleCommunicator_t::SetRescanI2CDevices() {
-	_last_i2c_scan++;
+    _last_i2c_scan++;
+}
+
+bool SimpleCommunicator_t::IsAutoDepthEnabled() {
+    return _depth_control_type == CT_AUTO;
+}
+
+bool SimpleCommunicator_t::IsAutoPitchEnabled() {
+    return _pitch_control_type == CT_AUTO;
+}
+
+bool SimpleCommunicator_t::IsAutoYawEnabled() {
+    return _yaw_control_type == CT_AUTO;
 }
 
 void SimpleCommunicator_t::OnConnectionStateChange(std::function<void (bool)> on_connection_state_change) {
