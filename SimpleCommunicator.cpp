@@ -290,7 +290,7 @@ void SimpleCommunicator_t::_UpdateConfigHash() {
 	_config_hash = HashLy(_depth_pid, 0);
 	_config_hash = HashLy(_yaw_pid, _config_hash);
 	_config_hash = HashLy(_pitch_pid, _config_hash);
-	_config_hash = HashLy(_motors_config, 0);
+	_config_hash = HashLy(_motors_config, _config_hash);
 }
 
 void SimpleCommunicator_t::_Receiver() {
