@@ -344,7 +344,7 @@ void SimpleCommunicator_t::_Receiver() {
 						}
 						_last_i2c_scan_remote = i2c_scan_token;
 
-						_config_hash = dr.GetVar<uint32_t>();
+						_remote_config_hash = dr.GetVar<uint32_t>();
 						uint16_t arduino_loop_frequency = dr.GetVar<uint16_t>();
 
 						if (_on_remote_processor_load_receive) {
