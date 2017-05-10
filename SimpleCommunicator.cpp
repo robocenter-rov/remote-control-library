@@ -549,8 +549,8 @@ void SimpleCommunicator_t::_Sender() {
 			_connection_provider
 				->WriteUInt8(SBI_MOVEMENT)
 				->WriteVar(control_type)
-				->WriteFloatAs<char>(_movement_force.x_force, -2, 2)
-				->WriteFloatAs<char>(_movement_force.y_force, -2, 2)
+				->WriteFloatAs<char>(_movement_force.x_force, -4, 4)
+				->WriteFloatAs<char>(_movement_force.y_force, -4, 4)
 				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force);
 				
 				if (_yaw_control_type == CT_AUTO) {
