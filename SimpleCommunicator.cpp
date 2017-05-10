@@ -65,7 +65,7 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	memset(&_yaw_pid, 0, sizeof _yaw_pid);
 	memset(&_pitch_pid, 0, sizeof _pitch_pid);
 
-	_UpdatePidHash();
+	_UpdateConfigHash();
 
 	_receive_time_out = std::chrono::milliseconds(1000);
 	_send_frequency = std::chrono::milliseconds(50);
@@ -115,7 +115,7 @@ void SimpleCommunicator_t::SetMotorsMultiplier(float m1, float m2, float m3, flo
 	_motors_config.MMultipliers.M5mul = m5;
 	_motors_config.MMultipliers.M6mul = m6;
 
-	_UpdateMotorsConfigHash();
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6) {
@@ -138,7 +138,7 @@ void SimpleCommunicator_t::SetMotorsPositions(int m1, int m2, int m3, int m4, in
 	_motors_config.MPositions.M5Pos = m5;
 	_motors_config.MPositions.M6Pos = m6;
 
-	_UpdateMotorsConfigHash();
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2) {
@@ -237,21 +237,21 @@ void SimpleCommunicator_t::SetDepthPid(float p, float i, float d) {
 	_depth_pid.P = p;
 	_depth_pid.I = i;
 	_depth_pid.D = d;
-	_UpdatePidHash();
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetPitcPid(float p, float i, float d) {
 	_pitch_pid.P = p;
 	_pitch_pid.I = i;
 	_pitch_pid.D = d;
-	_UpdatePidHash();
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetYawPid(float p, float i, float d) {
 	_yaw_pid.P = p;
 	_yaw_pid.I = i;
 	_yaw_pid.D = d;
-	_UpdatePidHash();
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetReceiveRawSensorData(bool receive) {
