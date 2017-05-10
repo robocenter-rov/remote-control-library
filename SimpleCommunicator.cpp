@@ -20,8 +20,7 @@ enum SEND_BLOCK_IDS {
 	SBI_DEVICES_STATE = 1,
 	SBI_MOTORS_STATE = 2,
 	SBI_MOVEMENT = 3,
-	SBI_PID = 4,
-	SBI_MOTORS_CONFIG = 5,
+	SBI_CONFIG = 4,
 };
 
 SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_provider) {
@@ -42,11 +41,9 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_sinking_force = 0;
 	_movement_control_type = MCT_DIRECT;
 	_connected = false;
-	_pid_hash = 0;
-	_remote_pid_hash = 0;
+	_config_hash = 0;
+	_remote_config_hash = 0;
 	_remote_packets_leak = 0;
-	_motors_config_hash = 0;
-	_remote_motors_config_hash = 0;
 	_camera1_pos = 0;
     _camera2_pos = 0;
 
@@ -289,14 +286,11 @@ void SimpleCommunicator_t::OnRobotRestart(std::function<void()> on_robot_restart
 	_on_robot_restart = on_robot_restart;
 }
 
-void SimpleCommunicator_t::_UpdatePidHash() {
-	_pid_hash = HashLy(_depth_pid, 0);
-	_pid_hash = HashLy(_yaw_pid, _pid_hash);
-	_pid_hash = HashLy(_pitch_pid, _pid_hash);
-}
-
-void SimpleCommunicator_t::_UpdateMotorsConfigHash() {
-	_motors_config_hash = HashLy(_motors_config, 0);
+void SimpleCommunicator_t::_UpdateConfigHash() {
+	_config_hash = HashLy(_depth_pid, 0);
+	_config_hash = HashLy(_yaw_pid, _config_hash);
+	_config_hash = HashLy(_pitch_pid, _config_hash);
+	_config_hash = HashLy(_motors_config, 0);
 }
 
 void SimpleCommunicator_t::_Receiver() {
@@ -350,8 +344,7 @@ void SimpleCommunicator_t::_Receiver() {
 						}
 						_last_i2c_scan_remote = i2c_scan_token;
 
-						_remote_pid_hash = dr.GetVar<uint32_t>();
-						_remote_motors_config_hash = dr.GetVar<uint32_t>();
+						_config_hash = dr.GetVar<uint32_t>();
 						uint16_t arduino_loop_frequency = dr.GetVar<uint16_t>();
 
 						if (_on_remote_processor_load_receive) {
@@ -569,9 +562,10 @@ void SimpleCommunicator_t::_Sender() {
 		default:;
 		}
 
-		if (_remote_pid_hash != _pid_hash) {
+		if (_remote_config_hash != _config_hash)
+		{
 			_connection_provider
-				->WriteUInt8(SBI_PID)
+				->WriteUInt8(SBI_CONFIG)
 
 				->WriteFloat(_depth_pid.P)
 				->WriteFloat(_depth_pid.I)
@@ -584,12 +578,6 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_pitch_pid.P)
 				->WriteFloat(_pitch_pid.I)
 				->WriteFloat(_pitch_pid.D)
-			;
-		}
-
-		if (_remote_motors_config_hash != _motors_config_hash) {
-			_connection_provider
-				->WriteUInt8(SBI_MOTORS_CONFIG)
 
 				->WriteVar(_motors_config.MPositions)
 
@@ -599,9 +587,8 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_motors_config.MMultipliers.M4mul)
 				->WriteFloat(_motors_config.MMultipliers.M5mul)
 				->WriteFloat(_motors_config.MMultipliers.M6mul)
-			;
+				;
 		}
-
 		_connection_provider->EndPacket();
 
 		std::this_thread::sleep_for(_send_frequency);

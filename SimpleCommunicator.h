@@ -160,11 +160,8 @@ private:
 	Pid_t _yaw_pid;
 	Pid_t _pitch_pid;
 
-	uint32_t _pid_hash;
-	uint32_t _remote_pid_hash;
-
-	uint32_t _motors_config_hash;
-	uint32_t _remote_motors_config_hash;
+	uint32_t _config_hash;
+	uint32_t _remote_config_hash;
 
 	uint32_t _last_received_msg_number;
 	uint32_t _last_sended_msg_number;
@@ -251,6 +248,7 @@ public:
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);
 	void OnRobotRestart(std::function<void()> on_robot_restart);
+	void _UpdateConfigHash();
 	void OnStateChange(std::function<void(State_t)> on_state_change);
 	void OnI2CDevicesReceive(std::function<void(I2CDevices_t)> on_i2c_devices_receive);
 	void OnBluetoothMsgReceive(std::function<void(std::string)> on_bluetooth_msg_receive);
