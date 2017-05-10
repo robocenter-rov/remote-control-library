@@ -47,6 +47,11 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_camera1_pos = 0;
     _camera2_pos = 0;
 
+	Camera_directions.camera1_direction = false;
+	Camera_directions.camera2_direction = false;
+	Camera_offsets.camera1_offset = 0;
+	Camera_offsets.camera2_offset = 0;
+
 	_motors_config.MPositions.M1Pos = 0;
     _motors_config.MPositions.M2Pos = 1;
     _motors_config.MPositions.M3Pos = 2;
@@ -286,6 +291,26 @@ bool SimpleCommunicator_t::IsAutoYawEnabled() {
     return _yaw_control_type == CT_AUTO;
 }
 
+void SimpleCommunicator_t::SetCam1Offset(float offset)
+{
+	Camera_offsets.camera1_offset = offset;
+}
+
+void SimpleCommunicator_t::SetCam2Offset(float offset)
+{
+	Camera_offsets.camera2_offset = offset;
+}
+
+void SimpleCommunicator_t::SetCam1Direction(bool direction)
+{
+	Camera_directions.camera1_direction = direction;
+}
+
+void SimpleCommunicator_t::SetCam2Direction(bool direction)
+{
+	Camera_directions.camera2_direction = direction;
+}
+
 void SimpleCommunicator_t::OnConnectionStateChange(std::function<void (bool)> on_connection_state_change) {
 	_on_connection_state_change = on_connection_state_change;
 }
@@ -302,7 +327,9 @@ void SimpleCommunicator_t::_UpdateConfigHash() {
 	_config_hash = HashLy(_depth_pid, 0);
 	_config_hash = HashLy(_yaw_pid, _config_hash);
 	_config_hash = HashLy(_pitch_pid, _config_hash);
-	_config_hash = HashLy(_motors_config, 0);
+	_config_hash = HashLy(_motors_config, _config_hash);
+	_config_hash = HashLy(Camera_directions, _config_hash);
+	_config_hash = HashLy(Camera_offsets, _config_hash);
 }
 
 void SimpleCommunicator_t::_Receiver() {
@@ -356,7 +383,7 @@ void SimpleCommunicator_t::_Receiver() {
 						}
 						_last_i2c_scan_remote = i2c_scan_token;
 
-						_config_hash = dr.GetVar<uint32_t>();
+						_remote_config_hash = dr.GetVar<uint32_t>();
 						uint16_t arduino_loop_frequency = dr.GetVar<uint16_t>();
 
 						if (_on_remote_processor_load_receive) {
@@ -526,10 +553,10 @@ void SimpleCommunicator_t::_Sender() {
 			->WriteUInt8(SBI_DEVICES_STATE)
 			->WriteFloatAs<char>(_manipulator_state.ArmPos, -1, 1)
 			->WriteFloatAs<char>(_manipulator_state.HandPos, -1, 1)
-			->WriteFloatAs<char>(_manipulator_state.M1, 0, M_PI * 2)
-			->WriteFloatAs<char>(_manipulator_state.M2, 0, M_PI * 2)
-			->WriteFloatAs<char>(_camera1_pos, 0, M_PI * 2)
-			->WriteFloatAs<char>(_camera2_pos, 0, M_PI * 2)
+            ->WriteFloatAs<char>(_manipulator_state.M1, -M_PI/2, M_PI/2)
+            ->WriteFloatAs<char>(_manipulator_state.M2, -M_PI/2, M_PI/2)
+            ->WriteFloatAs<char>(_camera1_pos, -M_PI/2, M_PI/2)
+            ->WriteFloatAs<char>(_camera2_pos, -M_PI/2, M_PI/2)
 		;
 
 		switch (_movement_control_type) {
@@ -599,6 +626,9 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_motors_config.MMultipliers.M4mul)
 				->WriteFloat(_motors_config.MMultipliers.M5mul)
 				->WriteFloat(_motors_config.MMultipliers.M6mul)
+				->WriteVar(Camera_directions)
+				->WriteFloat(Camera_offsets.camera1_offset)
+				->WriteFloat(Camera_offsets.camera2_offset)
 				;
 		}
 		_connection_provider->EndPacket();
