@@ -541,10 +541,10 @@ void SimpleCommunicator_t::_Sender() {
 			->WriteUInt8(SBI_DEVICES_STATE)
 			->WriteFloatAs<char>(_manipulator_state.ArmPos, -1, 1)
 			->WriteFloatAs<char>(_manipulator_state.HandPos, -1, 1)
-			->WriteFloatAs<char>(_manipulator_state.M1, 0, M_PI * 2)
-			->WriteFloatAs<char>(_manipulator_state.M2, 0, M_PI * 2)
-			->WriteFloatAs<char>(_camera1_pos, 0, M_PI * 2)
-			->WriteFloatAs<char>(_camera2_pos, 0, M_PI * 2)
+            ->WriteFloatAs<char>(_manipulator_state.M1, -M_PI/2, M_PI/2)
+            ->WriteFloatAs<char>(_manipulator_state.M2, -M_PI/2, M_PI/2)
+            ->WriteFloatAs<char>(_camera1_pos, -M_PI/2, M_PI/2)
+            ->WriteFloatAs<char>(_camera2_pos, -M_PI/2, M_PI/2)
 		;
 
 		switch (_movement_control_type) {
