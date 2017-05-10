@@ -316,6 +316,8 @@ void SimpleCommunicator_t::_UpdateConfigHash() {
 	_config_hash = HashLy(_yaw_pid, _config_hash);
 	_config_hash = HashLy(_pitch_pid, _config_hash);
 	_config_hash = HashLy(_motors_config, _config_hash);
+	_config_hash = HashLy(Camera_directions, _config_hash);
+	_config_hash = HashLy(Camera_offsets, _config_hash);
 }
 
 void SimpleCommunicator_t::_Receiver() {
@@ -612,7 +614,10 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_motors_config.MMultipliers.M4mul)
 				->WriteFloat(_motors_config.MMultipliers.M5mul)
 				->WriteFloat(_motors_config.MMultipliers.M6mul)
-				->WriteVar(Camera_directions);
+				->WriteVar(Camera_directions)
+				->WriteFloat(Camera_offsets.camera1_offset)
+				->WriteFloat(Camera_offsets.camera2_offset)
+				;
 		}
 		_connection_provider->EndPacket();
 
