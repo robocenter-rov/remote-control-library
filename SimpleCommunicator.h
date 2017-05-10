@@ -98,11 +98,13 @@ public:
 		float I;
 		float D;
 	};
-
+#pragma pack(push, 1)
 	struct {
-		bool camera1_direction;
-		bool camera2_direction;
+		bool camera1_direction : 1;
+		bool camera2_direction : 1;
 	} Camera_directions;
+#pragma pack(pop)
+
 	struct
 	{
 		float camera1_offset;
