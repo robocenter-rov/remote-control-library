@@ -153,13 +153,30 @@ void SimpleCommunicator_t::SetManipulatorState(float arm_pos, float hand_pos, fl
 	_manipulator_state.M2 = m2;
 }
 
-void SimpleCommunicator_t::SetCamera1Pos(float camera1) {
+void SimpleCommunicator_t::SetCamera1LocalPos(float camera1)
+{
+	_camerasCoordinateSystem._cam1Local = true;
 	_camera1_pos = camera1;
 }
 
-void SimpleCommunicator_t::SetCamera2Pos(float camera2) {
+void SimpleCommunicator_t::SetCamera2LocalPos(float camera2)
+{
+	_camerasCoordinateSystem._cam2Local = true;
 	_camera2_pos = camera2;
 }
+
+void SimpleCommunicator_t::SetCamera1GlobalPos(float camera1)
+{
+	_camerasCoordinateSystem._cam1Local = false;
+	_camera1_pos = camera1;
+}
+
+void SimpleCommunicator_t::SetCamera2GlobalPos(float camera2)
+{
+	_camerasCoordinateSystem._cam2Local = false;
+	_camera2_pos = camera2;
+}
+
 
 void SimpleCommunicator_t::SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6) {
 	_motors_state.M1Force = m1;
@@ -557,6 +574,7 @@ void SimpleCommunicator_t::_Sender() {
             ->WriteFloatAs<char>(_manipulator_state.M2, -M_PI/2, M_PI/2)
             ->WriteFloatAs<char>(_camera1_pos, -M_PI/2, M_PI/2)
             ->WriteFloatAs<char>(_camera2_pos, -M_PI/2, M_PI/2)
+			->WriteVar(_camerasCoordinateSystem)
 		;
 
 		switch (_movement_control_type) {

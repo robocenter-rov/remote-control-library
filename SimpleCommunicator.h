@@ -135,11 +135,17 @@ private:
 	ManipulatorState_t _manipulator_state;
 	float _camera1_pos;
 	float _camera2_pos;
-
+	struct
+	{
+		bool _cam1Local : 1;
+		bool _cam2Local : 1;
+	} _camerasCoordinateSystem;
 	struct {
 		float x_force;
 		float y_force;
 	} _movement_force;
+
+	
 
 	float _sinking_force;
 	float _depth;
@@ -228,8 +234,10 @@ public:
 	void SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6);
 	void SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6);
 	void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2);
-	void SetCamera1Pos(float camera1);
-	void SetCamera2Pos(float camera2);
+	void SetCamera1LocalPos(float camera1);
+	void SetCamera2LocalPos(float camera2);
+	void SetCamera1GlobalPos(float camera1);
+	void SetCamera2GlobalPos(float camera2);
 	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6);
 	void SetMotorState(int motor_id, float force);
 	void SetMovementForce(float x, float y);
