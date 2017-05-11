@@ -47,10 +47,10 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_camera1_pos = 0;
     _camera2_pos = 0;
 
-	Camera_directions.camera1_direction = false;
-	Camera_directions.camera2_direction = false;
-	Camera_offsets.camera1_offset = 0;
-	Camera_offsets.camera2_offset = 0;
+	_cams_config.Cam1MinVal = 0;
+	_cams_config.Cam1MaxVal = 180;
+	_cams_config.Cam2MinVal = 0;
+	_cams_config.Cam2MaxVal = 180;
 
 	_motors_config.MPositions.M1Pos = 0;
     _motors_config.MPositions.M2Pos = 1;
@@ -291,25 +291,26 @@ bool SimpleCommunicator_t::IsAutoYawEnabled() {
     return _yaw_control_type == CT_AUTO;
 }
 
-void SimpleCommunicator_t::SetCam1Offset(float offset)
+void SimpleCommunicator_t::SetCam1MinVal(float val)
 {
-	Camera_offsets.camera1_offset = offset;
+	_cams_config.Cam1MinVal = val;
 }
 
-void SimpleCommunicator_t::SetCam2Offset(float offset)
+void SimpleCommunicator_t::SetCam2MinVal(float val)
 {
-	Camera_offsets.camera2_offset = offset;
+	_cams_config.Cam2MinVal = val;
 }
 
-void SimpleCommunicator_t::SetCam1Direction(bool direction)
+void SimpleCommunicator_t::SetCam1MaxVal(bool val)
 {
-	Camera_directions.camera1_direction = direction;
+	_cams_config.Cam1MaxVal = val;
 }
 
-void SimpleCommunicator_t::SetCam2Direction(bool direction)
+void SimpleCommunicator_t::SetCam2MaxVal(bool val)
 {
-	Camera_directions.camera2_direction = direction;
+	_cams_config.Cam2MaxVal = val;
 }
+
 
 void SimpleCommunicator_t::OnConnectionStateChange(std::function<void (bool)> on_connection_state_change) {
 	_on_connection_state_change = on_connection_state_change;
@@ -328,8 +329,7 @@ void SimpleCommunicator_t::_UpdateConfigHash() {
 	_config_hash = HashLy(_yaw_pid, _config_hash);
 	_config_hash = HashLy(_pitch_pid, _config_hash);
 	_config_hash = HashLy(_motors_config, _config_hash);
-	_config_hash = HashLy(Camera_directions, _config_hash);
-	_config_hash = HashLy(Camera_offsets, _config_hash);
+	_config_hash = HashLy(_cams_config, _config_hash);
 }
 
 void SimpleCommunicator_t::_Receiver() {
@@ -626,10 +626,11 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_motors_config.MMultipliers.M4mul)
 				->WriteFloat(_motors_config.MMultipliers.M5mul)
 				->WriteFloat(_motors_config.MMultipliers.M6mul)
-				->WriteVar(Camera_directions)
-				->WriteFloat(Camera_offsets.camera1_offset)
-				->WriteFloat(Camera_offsets.camera2_offset)
-				;
+
+				->WriteFloat(_cams_config.Cam1MaxVal)
+				->WriteFloat(_cams_config.Cam1MinVal)
+				->WriteFloat(_cams_config.Cam2MaxVal)
+				->WriteFloat(_cams_config.Cam2MinVal);
 		}
 		_connection_provider->EndPacket();
 

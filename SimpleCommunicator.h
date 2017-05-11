@@ -100,16 +100,11 @@ public:
 	};
 #pragma pack(push, 1)
 	struct {
-		bool camera1_direction : 1;
-		bool camera2_direction : 1;
-	} Camera_directions;
-#pragma pack(pop)
-
-	struct
-	{
-		float camera1_offset;
-		float camera2_offset;
-	} Camera_offsets;
+		float Cam1MaxVal;
+		float Cam1MinVal;
+		float Cam2MaxVal;
+		float Cam2MinVal;
+	} _cams_config;
 private:
 	ConnectionProvider_t* _connection_provider;
 
@@ -258,10 +253,10 @@ public:
     bool IsAutoDepthEnabled();
     bool IsAutoPitchEnabled();
     bool IsAutoYawEnabled();
-	void SetCam1Offset(float offset);
-	void SetCam2Offset(float offset);
-	void SetCam1Direction(bool direction);
-	void SetCam2Direction(bool direction);
+	void SetCam1MinVal(float val);
+	void SetCam2MinVal(float val);
+	void SetCam1MaxVal(bool val);
+	void SetCam2MaxVal(bool val);
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);
