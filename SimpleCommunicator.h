@@ -104,7 +104,8 @@ public:
 		float Cam1MinVal;
 		float Cam2MaxVal;
 		float Cam2MinVal;
-	} _cams_config;
+    } _cams_config;
+#pragma pack(pop)
 private:
 	ConnectionProvider_t* _connection_provider;
 
