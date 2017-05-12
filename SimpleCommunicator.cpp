@@ -348,7 +348,7 @@ void SimpleCommunicator_t::_UpdateConfigHash() {
 	_config_hash = HashLy(_yaw_pid, _config_hash);
 	_config_hash = HashLy(_pitch_pid, _config_hash);
 	_config_hash = HashLy(_motors_config, _config_hash);
-	_config_hash = HashLy(_cams_config, _config_hash);
+	//d_config_hash = HashLy(_cams_config, _config_hash);
 }
 
 void SimpleCommunicator_t::_Receiver() {
@@ -645,12 +645,12 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_motors_config.MMultipliers.M3mul)
 				->WriteFloat(_motors_config.MMultipliers.M4mul)
 				->WriteFloat(_motors_config.MMultipliers.M5mul)
-				->WriteFloat(_motors_config.MMultipliers.M6mul)
-
-				->WriteFloat(_cams_config.Cam1MinVal)
+				->WriteFloat(_motors_config.MMultipliers.M6mul);
+			/*
 				->WriteFloat(_cams_config.Cam1MaxVal)
-				->WriteFloat(_cams_config.Cam2MinVal)
-				->WriteFloat(_cams_config.Cam2MaxVal);
+				->WriteFloat(_cams_config.Cam1MinVal)
+				->WriteFloat(_cams_config.Cam2MaxVal)
+				->WriteFloat(_cams_config.Cam2MinVal);*/
 		}
 		_connection_provider->EndPacket();
 
