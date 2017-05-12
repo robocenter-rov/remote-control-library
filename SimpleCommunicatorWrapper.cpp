@@ -72,11 +72,11 @@ void SimpleCommunicatorWrapper_t::SetManipulatorState(float arm_pos, float hand_
 }
 
 void SimpleCommunicatorWrapper_t::SetCamera1Pos(float camera1) const {
-	_simple_communicator->SetCamera1Pos(camera1);
+	_simple_communicator->SetCamera1LocalPos(camera1);
 }
 
 void SimpleCommunicatorWrapper_t::SetCamera2Pos(float camera2) const {
-	_simple_communicator->SetCamera2Pos(camera2);
+	_simple_communicator->SetCamera2LocalPos(camera2);
 }
 
 void SimpleCommunicatorWrapper_t::SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6) const {

@@ -264,8 +264,8 @@ public:
     bool IsAutoYawEnabled();
 	void SetCam1MinVal(float val);
 	void SetCam2MinVal(float val);
-	void SetCam1MaxVal(bool val);
-	void SetCam2MaxVal(bool val);
+	void SetCam1MaxVal(float val);
+	void SetCam2MaxVal(float val);
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);

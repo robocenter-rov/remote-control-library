@@ -51,6 +51,8 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_cams_config.Cam1MaxVal = 180;
 	_cams_config.Cam2MinVal = 0;
 	_cams_config.Cam2MaxVal = 180;
+	_camerasCoordinateSystem._cam1Local = 1;
+	_camerasCoordinateSystem._cam2Local = 1;
 
 	_motors_config.MPositions.M1Pos = 0;
     _motors_config.MPositions.M2Pos = 1;
@@ -318,12 +320,12 @@ void SimpleCommunicator_t::SetCam2MinVal(float val)
 	_cams_config.Cam2MinVal = val;
 }
 
-void SimpleCommunicator_t::SetCam1MaxVal(bool val)
+void SimpleCommunicator_t::SetCam1MaxVal(float val)
 {
 	_cams_config.Cam1MaxVal = val;
 }
 
-void SimpleCommunicator_t::SetCam2MaxVal(bool val)
+void SimpleCommunicator_t::SetCam2MaxVal(float val)
 {
 	_cams_config.Cam2MaxVal = val;
 }
@@ -645,10 +647,10 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_motors_config.MMultipliers.M5mul)
 				->WriteFloat(_motors_config.MMultipliers.M6mul)
 
-				->WriteFloat(_cams_config.Cam1MaxVal)
 				->WriteFloat(_cams_config.Cam1MinVal)
-				->WriteFloat(_cams_config.Cam2MaxVal)
-				->WriteFloat(_cams_config.Cam2MinVal);
+				->WriteFloat(_cams_config.Cam1MaxVal)
+				->WriteFloat(_cams_config.Cam2MinVal)
+				->WriteFloat(_cams_config.Cam2MaxVal);
 		}
 		_connection_provider->EndPacket();
 
