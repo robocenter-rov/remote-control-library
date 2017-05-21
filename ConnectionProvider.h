@@ -8,6 +8,16 @@ public:
 	using ControllerException_t::ControllerException_t;
 };
 
+class SendBufferLimitExceeded_t : public ConnectionProviderException_t {
+public:
+	SendBufferLimitExceeded_t() : ConnectionProviderException_t("Send buffer limit exceeded") {};
+};
+
+class ReceiveBufferLimitExceeded_t : public ConnectionProviderException_t {
+public:
+	ReceiveBufferLimitExceeded_t() : ConnectionProviderException_t("Receive buffer limit exceeded") {};
+};
+
 class ConnectionProvider_t {
 protected:
 	uint8_t* _receive_buffer;

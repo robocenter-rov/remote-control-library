@@ -38,9 +38,6 @@ CantClosePortException_t::CantClosePortException_t(std::string port_name, DWORD 
 PortClosedException_t::PortClosedException_t(std::string port_name):
 	ConnectionProviderException_t("Port is closed"), port_name(port_name) {}
 
-SendBufferLimitExceeded_t::SendBufferLimitExceeded_t() : ConnectionProviderException_t("Send buffer limit exceeded") {}
-ReceiveBufferLimitExceeded_t::ReceiveBufferLimitExceeded_t() : ConnectionProviderException_t("Receive buffer limit exceeded") {}
-
 void UARTConnectionProvider_t::WriteToSendBuffer(uint8_t val) {
 	if (_send_head <= _send_buffer_size) {
 		_send_buffer[_send_head++] = val;

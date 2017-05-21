@@ -24,16 +24,6 @@ public:
 	PortClosedException_t(std::string port_name);
 };
 
-class SendBufferLimitExceeded_t : public ConnectionProviderException_t {
-public:
-	SendBufferLimitExceeded_t();
-};
-
-class ReceiveBufferLimitExceeded_t : public ConnectionProviderException_t {
-public:
-	ReceiveBufferLimitExceeded_t();
-};
-
 class UARTConnectionProvider_t : public ConnectionProvider_t {
 protected:
 	HANDLE _h_com_port;
