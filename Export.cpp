@@ -137,11 +137,11 @@ extern "C" {
 	}
 
 	__declspec(dllexport) void RawSensorData(int& ax, int& ay, int& az, int& gx, int& gy, int& gz, int& mx, int& my, int& mz, float& depth) {
-		RawSensorData(ax, ay, az, gx, gy, gz, mx, my, mz, depth);
+		simple_communicator_wrapper->RawSensorData(ax, ay, az, gx, gy, gz, mx, my, mz, depth);
 	}
 
 	__declspec(dllexport) void CalibratedSensorData(float& ax, float& ay, float& az, float& gx, float& gy, float& gz, float& mx, float& my, float& mz, float& depth) {
-		CalibratedSensorData(ax, ay, az, gx, gy, gz, mx, my, mz, depth);
+		simple_communicator_wrapper->CalibratedSensorData(ax, ay, az, gx, gy, gz, mx, my, mz, depth);
 	}
 
 	__declspec(dllexport) void MotorsState(float& m1, float& m2, float& m3, float& m4, float& m5, float& m6) {
