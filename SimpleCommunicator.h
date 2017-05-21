@@ -98,19 +98,17 @@ public:
 		float I;
 		float D;
 	};
-#pragma pack(push, 1)
-	struct {
-		float Cam1MaxVal;
-		float Cam1MinVal;
-		float Cam2MaxVal;
-		float Cam2MinVal;
-    } _cams_config;
-#pragma pack(pop)
 private:
 	ConnectionProvider_t* _connection_provider;
 
 #pragma pack(push, 1)
 	struct {
+		Pid_t DepthPid;
+
+		Pid_t YawPid;
+
+		Pid_t PitchPid;
+
 		struct {
 			unsigned char M1Pos;
 			unsigned char M2Pos;
@@ -128,7 +126,30 @@ private:
 			float M5mul;
 			float M6mul;
 		} MMultipliers;
-	} _motors_config;
+
+		struct {
+			float Cam1MaxVal;
+			float Cam1MinVal;
+			float Cam2MaxVal;
+			float Cam2MinVal;
+		} CamsVals;
+
+		struct {
+			float AccXbias;
+			float AccYbias;
+			float AccZbias;
+
+			float AccXscale;
+			float AccYscale;
+			float AccZscale;
+
+			float GyroXbias;
+			float GyroYbias;
+			float GyroZbias;
+
+			float GyroScale;
+		} IMUConfig;
+	} _config;
 #pragma pack(pop)
 
 	MotorsState_t _motors_state;
@@ -169,10 +190,6 @@ private:
 
 	State_t _current_remote_state;
 	State_t _state;
-
-	Pid_t _depth_pid;
-	Pid_t _yaw_pid;
-	Pid_t _pitch_pid;
 
 	uint32_t _config_hash;
 	uint32_t _remote_config_hash;
@@ -266,6 +283,8 @@ public:
 	void SetCam2MinVal(float val);
 	void SetCam1MaxVal(float val);
 	void SetCam2MaxVal(float val);
+	void SetGyroConfig(float x_bias, float y_bias, float z_bias, float scale);
+	void SetAccelConfig(float x_bias, float y_bias, float z_bias, float x_scale, float y_scale, float z_scale);
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);

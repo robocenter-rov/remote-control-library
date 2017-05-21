@@ -47,30 +47,30 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_camera1_pos = 0;
     _camera2_pos = 0;
 
-	_cams_config.Cam1MinVal = 0;
-	_cams_config.Cam1MaxVal = 180;
-	_cams_config.Cam2MinVal = 0;
-	_cams_config.Cam2MaxVal = 180;
+	_config.CamsVals.Cam1MinVal = 0;
+	_config.CamsVals.Cam1MaxVal = 180;
+	_config.CamsVals.Cam2MinVal = 0;
+	_config.CamsVals.Cam2MaxVal = 180;
 	_camerasCoordinateSystem._cam1Local = 1;
 	_camerasCoordinateSystem._cam2Local = 1;
 
-	_motors_config.MPositions.M1Pos = 0;
-    _motors_config.MPositions.M2Pos = 1;
-    _motors_config.MPositions.M3Pos = 2;
-    _motors_config.MPositions.M4Pos = 3;
-    _motors_config.MPositions.M5Pos = 4;
-    _motors_config.MPositions.M6Pos = 5;
+	_config.MPositions.M1Pos = 0;
+	_config.MPositions.M2Pos = 1;
+	_config.MPositions.M3Pos = 2;
+	_config.MPositions.M4Pos = 3;
+	_config.MPositions.M5Pos = 4;
+	_config.MPositions.M6Pos = 5;
 
-	_motors_config.MMultipliers.M1mul = 1;
-	_motors_config.MMultipliers.M2mul = 1;
-	_motors_config.MMultipliers.M3mul = 1;
-	_motors_config.MMultipliers.M4mul = 1;
-	_motors_config.MMultipliers.M5mul = 1;
-	_motors_config.MMultipliers.M6mul = 1;
+	_config.MMultipliers.M1mul = 1;
+	_config.MMultipliers.M2mul = 1;
+	_config.MMultipliers.M3mul = 1;
+	_config.MMultipliers.M4mul = 1;
+	_config.MMultipliers.M5mul = 1;
+	_config.MMultipliers.M6mul = 1;
 
-	memset(&_depth_pid, 0, sizeof _depth_pid);
-	memset(&_yaw_pid, 0, sizeof _yaw_pid);
-	memset(&_pitch_pid, 0, sizeof _pitch_pid);
+	memset(&_config.DepthPid, 0, sizeof _config.DepthPid);
+	memset(&_config.YawPid, 0, sizeof _config.YawPid);
+	memset(&_config.PitchPid, 0, sizeof _config.PitchPid);
 
 	_UpdateConfigHash();
 
@@ -115,12 +115,12 @@ void SimpleCommunicator_t::SetRemoteReceiveTimeout(unsigned long millis) {
 }
 
 void SimpleCommunicator_t::SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6) {
-	_motors_config.MMultipliers.M1mul = m1;
-	_motors_config.MMultipliers.M2mul = m2;
-	_motors_config.MMultipliers.M3mul = m3;
-	_motors_config.MMultipliers.M4mul = m4;
-	_motors_config.MMultipliers.M5mul = m5;
-	_motors_config.MMultipliers.M6mul = m6;
+	_config.MMultipliers.M1mul = m1;
+	_config.MMultipliers.M2mul = m2;
+	_config.MMultipliers.M3mul = m3;
+	_config.MMultipliers.M4mul = m4;
+	_config.MMultipliers.M5mul = m5;
+	_config.MMultipliers.M6mul = m6;
 
 	_UpdateConfigHash();
 }
@@ -138,12 +138,12 @@ void SimpleCommunicator_t::SetMotorsPositions(int m1, int m2, int m3, int m4, in
 		}
 	}
 
-	_motors_config.MPositions.M1Pos = m1;
-	_motors_config.MPositions.M2Pos = m2;
-	_motors_config.MPositions.M3Pos = m3;
-	_motors_config.MPositions.M4Pos = m4;
-	_motors_config.MPositions.M5Pos = m5;
-	_motors_config.MPositions.M6Pos = m6;
+	_config.MPositions.M1Pos = m1;
+	_config.MPositions.M2Pos = m2;
+	_config.MPositions.M3Pos = m3;
+	_config.MPositions.M4Pos = m4;
+	_config.MPositions.M5Pos = m5;
+	_config.MPositions.M6Pos = m6;
 
 	_UpdateConfigHash();
 }
@@ -258,23 +258,23 @@ void SimpleCommunicator_t::SetReadBluetoothState(bool read) {
 }
 
 void SimpleCommunicator_t::SetDepthPid(float p, float i, float d) {
-	_depth_pid.P = p;
-	_depth_pid.I = i;
-	_depth_pid.D = d;
+	_config.DepthPid.P = p;
+	_config.DepthPid.I = i;
+	_config.DepthPid.D = d;
 	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetPitcPid(float p, float i, float d) {
-	_pitch_pid.P = p;
-	_pitch_pid.I = i;
-	_pitch_pid.D = d;
+	_config.PitchPid.P = p;
+	_config.PitchPid.I = i;
+	_config.PitchPid.D = d;
 	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetYawPid(float p, float i, float d) {
-	_yaw_pid.P = p;
-	_yaw_pid.I = i;
-	_yaw_pid.D = d;
+	_config.YawPid.P = p;
+	_config.YawPid.I = i;
+	_config.YawPid.D = d;
 	_UpdateConfigHash();
 }
 
@@ -312,22 +312,27 @@ bool SimpleCommunicator_t::IsAutoYawEnabled() {
 
 void SimpleCommunicator_t::SetCam1MinVal(float val)
 {
-	_cams_config.Cam1MinVal = val;
+	_config.CamsVals.Cam1MinVal = val;
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetCam2MinVal(float val)
 {
-	_cams_config.Cam2MinVal = val;
+	_config.CamsVals.Cam2MinVal = val;
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetCam1MaxVal(float val)
 {
-	_cams_config.Cam1MaxVal = val;
+	_config.CamsVals.Cam1MaxVal = val;
+	_UpdateConfigHash();
 }
 
 void SimpleCommunicator_t::SetCam2MaxVal(float val)
 {
-	_cams_config.Cam2MaxVal = val;
+	_config.CamsVals.Cam2MaxVal = val;
+	_UpdateConfigHash();
+}
 }
 
 
@@ -344,11 +349,7 @@ void SimpleCommunicator_t::OnRobotRestart(std::function<void()> on_robot_restart
 }
 
 void SimpleCommunicator_t::_UpdateConfigHash() {
-	_config_hash = HashLy(_depth_pid, 0);
-	_config_hash = HashLy(_yaw_pid, _config_hash);
-	_config_hash = HashLy(_pitch_pid, _config_hash);
-	_config_hash = HashLy(_motors_config, _config_hash);
-	//d_config_hash = HashLy(_cams_config, _config_hash);
+	_config_hash = HashLy(_config, 0);
 }
 
 void SimpleCommunicator_t::_Receiver() {
@@ -574,8 +575,8 @@ void SimpleCommunicator_t::_Sender() {
 			->WriteFloatAs<char>(_manipulator_state.HandPos, -1, 1)
             ->WriteFloatAs<char>(_manipulator_state.M1, -M_PI/2, M_PI/2)
             ->WriteFloatAs<char>(_manipulator_state.M2, -M_PI/2, M_PI/2)
-            ->WriteFloatAs<char>(_camera1_pos, -M_PI/2, M_PI/2)
-            ->WriteFloatAs<char>(_camera2_pos, -M_PI/2, M_PI/2)
+            ->WriteFloatAs<char>(_camera1_pos, -M_PI, M_PI)
+            ->WriteFloatAs<char>(_camera2_pos, -M_PI, M_PI)
 			->WriteVar(_camerasCoordinateSystem)
 		;
 
@@ -626,31 +627,51 @@ void SimpleCommunicator_t::_Sender() {
 			_connection_provider
 				->WriteUInt8(SBI_CONFIG)
 
-				->WriteFloat(_depth_pid.P)
-				->WriteFloat(_depth_pid.I)
-				->WriteFloat(_depth_pid.D)
+				->WriteFloat(_config.DepthPid.P)
+				->WriteFloat(_config.DepthPid.I)
+				->WriteFloat(_config.DepthPid.D)
 
-				->WriteFloat(_yaw_pid.P)
-				->WriteFloat(_yaw_pid.I)
-				->WriteFloat(_yaw_pid.D)
+				->WriteFloat(_config.YawPid.P)
+				->WriteFloat(_config.YawPid.I)
+				->WriteFloat(_config.YawPid.D)
 
-				->WriteFloat(_pitch_pid.P)
-				->WriteFloat(_pitch_pid.I)
-				->WriteFloat(_pitch_pid.D)
+				->WriteFloat(_config.PitchPid.P)
+				->WriteFloat(_config.PitchPid.I)
+				->WriteFloat(_config.PitchPid.D)
 
-				->WriteVar(_motors_config.MPositions)
+				->WriteUInt8(_config.MPositions.M1Pos)
+				->WriteUInt8(_config.MPositions.M2Pos)
+				->WriteUInt8(_config.MPositions.M3Pos)
+				->WriteUInt8(_config.MPositions.M4Pos)
+				->WriteUInt8(_config.MPositions.M5Pos)
+				->WriteUInt8(_config.MPositions.M6Pos)
 
-				->WriteFloat(_motors_config.MMultipliers.M1mul)
-				->WriteFloat(_motors_config.MMultipliers.M2mul)
-				->WriteFloat(_motors_config.MMultipliers.M3mul)
-				->WriteFloat(_motors_config.MMultipliers.M4mul)
-				->WriteFloat(_motors_config.MMultipliers.M5mul)
-				->WriteFloat(_motors_config.MMultipliers.M6mul);
-			/*
-				->WriteFloat(_cams_config.Cam1MaxVal)
-				->WriteFloat(_cams_config.Cam1MinVal)
-				->WriteFloat(_cams_config.Cam2MaxVal)
-				->WriteFloat(_cams_config.Cam2MinVal);*/
+				->WriteFloat(_config.MMultipliers.M1mul)
+				->WriteFloat(_config.MMultipliers.M2mul)
+				->WriteFloat(_config.MMultipliers.M3mul)
+				->WriteFloat(_config.MMultipliers.M4mul)
+				->WriteFloat(_config.MMultipliers.M5mul)
+				->WriteFloat(_config.MMultipliers.M6mul)
+			
+				->WriteFloat(_config.CamsVals.Cam1MaxVal)
+				->WriteFloat(_config.CamsVals.Cam1MinVal)
+				->WriteFloat(_config.CamsVals.Cam2MaxVal)
+				->WriteFloat(_config.CamsVals.Cam2MinVal)
+			
+				->WriteFloat(_config.IMUConfig.AccXbias)
+				->WriteFloat(_config.IMUConfig.AccYbias)
+				->WriteFloat(_config.IMUConfig.AccZbias)
+
+				->WriteFloat(_config.IMUConfig.AccXscale)
+				->WriteFloat(_config.IMUConfig.AccYscale)
+				->WriteFloat(_config.IMUConfig.AccZscale)
+
+				->WriteFloat(_config.IMUConfig.GyroXbias)
+				->WriteFloat(_config.IMUConfig.GyroYbias)
+				->WriteFloat(_config.IMUConfig.GyroZbias)
+
+				->WriteFloat(_config.IMUConfig.GyroScale)
+			;
 		}
 		_connection_provider->EndPacket();
 
