@@ -188,6 +188,11 @@ private:
 		CT_AUTO
 	} _depth_control_type, _yaw_control_type, _pitch_control_type;
 
+	enum COORDINATE_SYSTEM {
+		CS_LOCAL,
+		CS_GLOBAL,
+	} _x_coord_system, _y_coord_system, _z_coord_system;
+
 	State_t _current_remote_state;
 	State_t _state;
 
@@ -259,6 +264,12 @@ public:
 	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6);
 	void SetMotorState(int motor_id, float force);
 	void SetMovementForce(float x, float y);
+	void SetLocalXForce(float x);
+	void SetLocalYForce(float y);
+	void SetLocalZForce(float z);
+	void SetGlobalXForce(float x);
+	void SetGlobalYForce(float y);
+	void SetGlobalZForce(float z);
 	void SetSinkingForce(float z);
 	void SetDepth(float depth);
 	void SetPitchForce(float pitch_force);

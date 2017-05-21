@@ -333,6 +333,24 @@ void SimpleCommunicator_t::SetCam2MaxVal(float val)
 	_config.CamsVals.Cam2MaxVal = val;
 	_UpdateConfigHash();
 }
+
+void SimpleCommunicator_t::SetGyroConfig(float x_bias, float y_bias, float z_bias, float scale) {
+	_config.IMUConfig.GyroXbias = x_bias;
+	_config.IMUConfig.GyroYbias = y_bias;
+	_config.IMUConfig.GyroZbias = z_bias;
+	_config.IMUConfig.GyroScale = scale;
+	_UpdateConfigHash();
+}
+
+void SimpleCommunicator_t::SetAccelConfig(float x_bias, float y_bias, float z_bias, float x_scale, float y_scale, float z_scale) {
+	_config.IMUConfig.AccXbias = x_bias;
+	_config.IMUConfig.AccYbias = y_bias;
+	_config.IMUConfig.AccZbias = z_bias;
+
+	_config.IMUConfig.AccXscale = x_scale;
+	_config.IMUConfig.AccYscale = y_scale;
+	_config.IMUConfig.AccZscale= z_scale;
+	_UpdateConfigHash();
 }
 
 
@@ -594,11 +612,19 @@ void SimpleCommunicator_t::_Sender() {
 			break;
 		case MCT_VECTOR:
 			struct {
-				bool auto_depth : 1;
 				bool auto_yaw : 1;
 				bool auto_pitch : 1;
+				bool x_control : 1;
+				bool y_control : 1;
+				unsigned char z_control : 2;
 			} control_type;
-			control_type = { _depth_control_type == CT_AUTO, _yaw_control_type == CT_AUTO, _pitch_control_type == CT_AUTO };
+			control_type = {
+				_yaw_control_type == CT_AUTO,
+				_pitch_control_type == CT_AUTO,
+				_x_coord_system == CS_LOCAL,
+				_y_coord_system == CS_LOCAL,
+				unsigned char(_depth_control_type == CT_DIRECT ? _z_coord_system == CS_LOCAL ? 0 : 1 : 2),
+			};
 			_connection_provider
 				->WriteUInt8(SBI_MOVEMENT)
 				->WriteVar(control_type)
@@ -609,7 +635,7 @@ void SimpleCommunicator_t::_Sender() {
 				if (_yaw_control_type == CT_AUTO) {
 					_connection_provider->WriteFloatAs<char>(_yaw, -M_PI, M_PI);
 				} else {
-					_connection_provider->WriteFloatAs<char>(_yaw_force, -2, 2);
+					_connection_provider->WriteFloatAs<char>(_yaw_force, -4, 4);
 				}
 
 				if (_pitch_control_type == CT_AUTO) {
