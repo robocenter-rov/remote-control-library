@@ -29,7 +29,7 @@ public:
 	void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2) const;
 	void SetCamera1Pos(float camera1) const;
 	void SetCamera2Pos(float camera2) const;
-	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6) const;
+	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8) const;
 	void SetMovementForce(float x, float y) const;
 	void SetSinkingForce(float z) const;
 	void SetDepth(float depth) const;

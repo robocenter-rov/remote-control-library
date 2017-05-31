@@ -117,7 +117,7 @@ int main() {
 		bool receive_pid = false;
 		bool receive_loop = false;
 
-		float thrust[6] = { 0, 0, 0, 0, 0, 0 };
+		float thrust[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		float manipulator[2] = { 0, 0 };
 
 		float x = 0, y = 0;
@@ -136,7 +136,7 @@ int main() {
 				int m_id;
 				std::cin >> m_id;
 				std::cin >> thrust[m_id];
-				communicator->SetMotorsState(thrust[0], thrust[1], thrust[2], thrust[3], thrust[4], thrust[5]);
+				communicator->SetMotorsState(thrust[0], thrust[1], thrust[2], thrust[3], thrust[4], thrust[5], thrust[6], thrust[7]);
 			} break;
 			case 'd': {
 				char d;
@@ -181,7 +181,7 @@ int main() {
 					communicator->SetPitchForce(v);
 				}
 			} break;
-			case 'g': {
+			/*case 'g': {
 				int c_id;
 				std::cin >> c_id;
 				float pos;
@@ -192,7 +192,7 @@ int main() {
 				else if (c_id == 2) {
 					communicator->SetCamera2Pos(pos);
 				}
-			} break;
+			} break;*/
 			case 't': {
 				int d_id;
 				std::cin >> d_id;
