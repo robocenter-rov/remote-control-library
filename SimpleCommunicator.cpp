@@ -180,13 +180,15 @@ void SimpleCommunicator_t::SetCamera2GlobalPos(float camera2)
 }
 
 
-void SimpleCommunicator_t::SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6) {
+void SimpleCommunicator_t::SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8) {
 	_motors_state.M1Force = m1;
 	_motors_state.M2Force = m2;
 	_motors_state.M3Force = m3;
 	_motors_state.M4Force = m4;
 	_motors_state.M5Force = m5;
 	_motors_state.M6Force = m6;
+	_motors_state.M7Force = m7;
+	_motors_state.M8Force = m8;
 	_movement_control_type = MCT_DIRECT;
 }
 

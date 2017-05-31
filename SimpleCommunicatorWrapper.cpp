@@ -79,8 +79,8 @@ void SimpleCommunicatorWrapper_t::SetCamera2Pos(float camera2) const {
 	_simple_communicator->SetCamera2LocalPos(camera2);
 }
 
-void SimpleCommunicatorWrapper_t::SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6) const {
-	_simple_communicator->SetMotorsState(m1, m2, m3, m4, m5, m6);
+void SimpleCommunicatorWrapper_t::SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8) const {
+	_simple_communicator->SetMotorsState(m1, m2, m3, m4, m5, m6, m7, m8);
 }
 
 void SimpleCommunicatorWrapper_t::SetMovementForce(float x, float y) const {

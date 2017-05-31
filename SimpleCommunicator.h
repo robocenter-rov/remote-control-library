@@ -41,6 +41,8 @@ public:
 		float M4Force;
 		float M5Force;
 		float M6Force;
+		float M7Force;
+		float M8Force;
 	};
 
 	struct ManipulatorState_t {
@@ -261,7 +263,7 @@ public:
 	void SetCamera2LocalPos(float camera2);
 	void SetCamera1GlobalPos(float camera1);
 	void SetCamera2GlobalPos(float camera2);
-	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6);
+	void SetMotorsState(float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8);
 	void SetMotorState(int motor_id, float force);
 	void SetMovementForce(float x, float y);
 	void SetLocalXForce(float x);
