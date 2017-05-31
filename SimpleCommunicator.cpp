@@ -60,6 +60,8 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_config.MPositions.M4Pos = 3;
 	_config.MPositions.M5Pos = 4;
 	_config.MPositions.M6Pos = 5;
+	_config.MPositions.M7Pos = 6;
+	_config.MPositions.M8Pos = 7;
 
 	_config.MMultipliers.M1mul = 1;
 	_config.MMultipliers.M2mul = 1;
@@ -67,6 +69,8 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_config.MMultipliers.M4mul = 1;
 	_config.MMultipliers.M5mul = 1;
 	_config.MMultipliers.M6mul = 1;
+	_config.MMultipliers.M7mul = 1;
+	_config.MMultipliers.M8mul = 1;
 
 	memset(&_config.DepthPid, 0, sizeof _config.DepthPid);
 	memset(&_config.YawPid, 0, sizeof _config.YawPid);
@@ -114,24 +118,26 @@ void SimpleCommunicator_t::SetRemoteReceiveTimeout(unsigned long millis) {
 	_remote_receive_timeout = millis;
 }
 
-void SimpleCommunicator_t::SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6) {
+void SimpleCommunicator_t::SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8) {
 	_config.MMultipliers.M1mul = m1;
 	_config.MMultipliers.M2mul = m2;
 	_config.MMultipliers.M3mul = m3;
 	_config.MMultipliers.M4mul = m4;
 	_config.MMultipliers.M5mul = m5;
 	_config.MMultipliers.M6mul = m6;
+	_config.MMultipliers.M7mul = m7;
+	_config.MMultipliers.M8mul = m8;
 
 	_UpdateConfigHash();
 }
 
-void SimpleCommunicator_t::SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6) {
-	int m_pos[] = { m1, m2, m3, m4, m5, m6 };
-	for (int i = 0; i < 6; i++) {
-		if (m_pos[i] < 0 || m_pos[i] > 5) {
+void SimpleCommunicator_t::SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6, float m7, float m8) {
+	int m_pos[] = { m1, m2, m3, m4, m5, m6, m7, m8 };
+	for (int i = 0; i < 8; i++) {
+		if (m_pos[i] < 0 || m_pos[i] > 7) {
 			throw WrongMotorsPosition_t();
 		}
-		for (int j = 0; j < 6; j++) {
+		for (int j = 0; j < 8; j++) {
 			if (i != j && m_pos[i] == m_pos[j]) {
 				throw WrongMotorsPosition_t();
 			}
@@ -144,6 +150,8 @@ void SimpleCommunicator_t::SetMotorsPositions(int m1, int m2, int m3, int m4, in
 	_config.MPositions.M4Pos = m4;
 	_config.MPositions.M5Pos = m5;
 	_config.MPositions.M6Pos = m6;
+	_config.MPositions.M7Pos = m7;
+	_config.MPositions.M8Pos = m8;
 
 	_UpdateConfigHash();
 }
@@ -199,7 +207,9 @@ void SimpleCommunicator_t::SetMotorState(int motor_id, float force) {
 		case 2: _motors_state.M3Force = force; break;
 		case 3: _motors_state.M4Force = force; break;
 		case 4: _motors_state.M5Force = force; break;
-        case 5: _motors_state.M6Force = force; break;
+		case 5: _motors_state.M6Force = force; break;
+		case 6: _motors_state.M7Force = force; break;
+		case 7: _motors_state.M8Force = force; break;
 		default: throw WrongMotorId_t();
 	}
 	_movement_control_type = MCT_DIRECT;
@@ -533,6 +543,8 @@ void SimpleCommunicator_t::_Receiver() {
 						motors_state.M4Force = dr.GetFloat();
 						motors_state.M5Force = dr.GetFloat();
 						motors_state.M6Force = dr.GetFloat();
+						motors_state.M7Force = dr.GetFloat();
+						motors_state.M8Force = dr.GetFloat();
 
 						if (_on_motors_state_receive) {
 							_on_motors_state_receive(motors_state);
@@ -610,6 +622,8 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloatAs<char>(_motors_state.M4Force, -1, 1)
 				->WriteFloatAs<char>(_motors_state.M5Force, -1, 1)
 				->WriteFloatAs<char>(_motors_state.M6Force, -1, 1)
+				->WriteFloatAs<char>(_motors_state.M7Force, -1, 1)
+				->WriteFloatAs<char>(_motors_state.M8Force, -1, 1)
 			;
 			break;
 		case MCT_VECTOR:
@@ -673,6 +687,8 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteUInt8(_config.MPositions.M4Pos)
 				->WriteUInt8(_config.MPositions.M5Pos)
 				->WriteUInt8(_config.MPositions.M6Pos)
+				->WriteUInt8(_config.MPositions.M7Pos)
+				->WriteUInt8(_config.MPositions.M8Pos)
 
 				->WriteFloat(_config.MMultipliers.M1mul)
 				->WriteFloat(_config.MMultipliers.M2mul)
@@ -680,6 +696,8 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_config.MMultipliers.M4mul)
 				->WriteFloat(_config.MMultipliers.M5mul)
 				->WriteFloat(_config.MMultipliers.M6mul)
+				->WriteFloat(_config.MMultipliers.M7mul)
+				->WriteFloat(_config.MMultipliers.M8mul)
 			
 				->WriteFloat(_config.CamsVals.Cam1MaxVal)
 				->WriteFloat(_config.CamsVals.Cam1MinVal)

@@ -59,12 +59,12 @@ void SimpleCommunicatorWrapper_t::Stop() const {
 	_connection_provider->Stop();
 }
 
-void SimpleCommunicatorWrapper_t::SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6) const {
-	_simple_communicator->SetMotorsMultiplier(m1, m2, m3, m4, m5, m6);
+void SimpleCommunicatorWrapper_t::SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8) const {
+	_simple_communicator->SetMotorsMultiplier(m1, m2, m3, m4, m5, m6, m7, m8);
 }
 
-void SimpleCommunicatorWrapper_t::SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6) const {
-	_simple_communicator->SetMotorsPositions(m1, m2, m3, m4, m5, m6);
+void SimpleCommunicatorWrapper_t::SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8) const {
+	_simple_communicator->SetMotorsPositions(m1, m2, m3, m4, m5, m6, m7, m8);
 }
 
 void SimpleCommunicatorWrapper_t::SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2) const {

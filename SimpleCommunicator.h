@@ -118,6 +118,8 @@ private:
 			unsigned char M4Pos;
 			unsigned char M5Pos;
 			unsigned char M6Pos;
+			unsigned char M7Pos;
+			unsigned char M8Pos;
 		} MPositions;
 
 		struct {
@@ -127,6 +129,8 @@ private:
 			float M4mul;
 			float M5mul;
 			float M6mul;
+			float M7mul;
+			float M8mul;
 		} MMultipliers;
 
 		struct {
@@ -256,8 +260,8 @@ public:
 	void SetRemoteSendMessageFrequency(unsigned long millis);
 	void SetRemoteReceiveTimeout(unsigned long millis);
 
-	void SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6);
-	void SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6);
+	void SetMotorsMultiplier(float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8);
+	void SetMotorsPositions(int m1, int m2, int m3, int m4, int m5, int m6, float m7, float m8);
 	void SetManipulatorState(float arm_pos, float hand_pos, float m1, float m2);
 	void SetCamera1LocalPos(float camera1);
 	void SetCamera2LocalPos(float camera2);

@@ -223,8 +223,8 @@ int main() {
 				receive_loop = !receive_loop;
 			} break;
 			case 'y': {
-				communicator->SetMotorsPositions(0, 1, 2, 3, 4, 5);
-				communicator->SetMotorsMultiplier(0, 1, -1, -0.5, 0.3, 0.9);
+				communicator->SetMotorsPositions(0, 1, 2, 3, 4, 5, 6, 7);
+				communicator->SetMotorsMultiplier(0, 1, -1, -0.5, 0.3, 0.9, 1, 1);
 			} break;
 			}
 		}
