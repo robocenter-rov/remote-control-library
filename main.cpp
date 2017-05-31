@@ -187,10 +187,10 @@ int main() {
 				float pos;
 				std::cin >> pos;
 				if (c_id == 1) {
-					communicator->SetCamera1Pos(pos);
+					communicator->SetCamera1LocalPos(pos);
 				}
 				else if (c_id == 2) {
-					communicator->SetCamera2Pos(pos);
+					communicator->SetCamera1LocalPos(pos);
 				}
 			} break;
 			case 't': {
