@@ -2,13 +2,14 @@
 #include <exception>
 #include "Exception.h"
 #include "Utils.h"
+#include <QObject>
 
 class ConnectionProviderException_t : public ControllerException_t {
 public:
 	using ControllerException_t::ControllerException_t;
 };
 
-class ConnectionProvider_t {
+class ConnectionProvider_t : public QObject {
 protected:
 	uint8_t* _receive_buffer;
 	size_t _receive_buffer_size;
