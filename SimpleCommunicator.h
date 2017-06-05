@@ -27,6 +27,7 @@ public:
 	struct I2CDevices_t {
 		bool PCA1 : 1;
 		bool PCA2 : 1;
+		bool PCA3 : 1;
 		bool HMC58X3 : 1;
 		bool ITG3200 : 1;
 		bool ADXL345 : 1;
