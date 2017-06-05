@@ -38,7 +38,6 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_pitch = 0;
 	_pitch_force = 0;
 	_depth = 0;
-	_sinking_force = 0;
 	_movement_control_type = MCT_DIRECT;
 	_connected = false;
 	_config_hash = 0;
@@ -72,6 +71,7 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	_config.MMultipliers.M7mul = 1;
 	_config.MMultipliers.M8mul = 1;
 
+	memset(&_movement_force, 0, sizeof _movement_force);
 	memset(&_config.DepthPid, 0, sizeof _config.DepthPid);
 	memset(&_config.YawPid, 0, sizeof _config.YawPid);
 	memset(&_config.PitchPid, 0, sizeof _config.PitchPid);
@@ -216,13 +216,37 @@ void SimpleCommunicator_t::SetMotorState(int motor_id, float force) {
 }
 
 void SimpleCommunicator_t::SetMovementForce(float x, float y) {
-	_movement_force.x_force = x;
-	_movement_force.y_force = y;
+	_movement_force.local_x_force = x;
+	_movement_force.local_y_force = y;
 	_movement_control_type = MCT_VECTOR;
 }
 
+void SimpleCommunicator_t::SetLocalXForce(float x) {
+	_movement_force.local_x_force = x;
+}
+
+void SimpleCommunicator_t::SetLocalYForce(float y) {
+	_movement_force.local_y_force = y;
+}
+
+void SimpleCommunicator_t::SetLocalZForce(float z) {
+	_movement_force.local_z_force = z;
+}
+
+void SimpleCommunicator_t::SetGlobalXForce(float x) {
+	_movement_force.global_x_force = x;
+}
+
+void SimpleCommunicator_t::SetGlobalYForce(float y) {
+	_movement_force.global_y_force = y;
+}
+
+void SimpleCommunicator_t::SetGlobalZForce(float z) {
+	_movement_force.global_z_force = z;
+}
+
 void SimpleCommunicator_t::SetSinkingForce(float z) {
-	_sinking_force = z;
+	_movement_force.global_z_force = z;
 	_depth_control_type = CT_DIRECT;
 	_movement_control_type = MCT_VECTOR;
 }
@@ -637,16 +661,17 @@ void SimpleCommunicator_t::_Sender() {
 			control_type = {
 				_yaw_control_type == CT_AUTO,
 				_pitch_control_type == CT_AUTO,
-				_x_coord_system == CS_LOCAL,
-				_y_coord_system == CS_LOCAL,
-				unsigned char(_depth_control_type == CT_DIRECT ? _z_coord_system == CS_LOCAL ? 0 : 1 : 2),
+				_depth_control_type == CT_AUTO,
 			};
 			_connection_provider
 				->WriteUInt8(SBI_MOVEMENT)
 				->WriteVar(control_type)
-				->WriteFloatAs<char>(_movement_force.x_force, -4, 4)
-				->WriteFloatAs<char>(_movement_force.y_force, -4, 4)
-				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _sinking_force);
+				->WriteFloatAs<char>(_movement_force.local_x_force, -4, 4)
+				->WriteFloatAs<char>(_movement_force.local_y_force, -4, 4)
+				->WriteFloatAs<char>(_movement_force.local_z_force, -4, 4)
+				->WriteFloatAs<char>(_movement_force.global_x_force, -4, 4)
+				->WriteFloatAs<char>(_movement_force.global_y_force, -4, 4)
+				->WriteFloat(_depth_control_type == CT_AUTO ? _depth : _movement_force.global_z_force);
 				
 				if (_yaw_control_type == CT_AUTO) {
 					_connection_provider->WriteFloatAs<char>(_yaw, -M_PI, M_PI);

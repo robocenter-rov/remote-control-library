@@ -169,13 +169,14 @@ private:
 		bool _cam2Local : 1;
 	} _camerasCoordinateSystem;
 	struct {
-		float x_force;
-		float y_force;
+		float local_x_force;
+		float local_y_force;
+		float local_z_force;
+		float global_x_force;
+		float global_y_force;
+		float global_z_force;
 	} _movement_force;
 
-	
-
-	float _sinking_force;
 	float _depth;
 
 	float _pitch_force;
@@ -193,11 +194,6 @@ private:
 		CT_DIRECT,
 		CT_AUTO
 	} _depth_control_type, _yaw_control_type, _pitch_control_type;
-
-	enum COORDINATE_SYSTEM {
-		CS_LOCAL,
-		CS_GLOBAL,
-	} _x_coord_system, _y_coord_system, _z_coord_system;
 
 	State_t _current_remote_state;
 	State_t _state;
