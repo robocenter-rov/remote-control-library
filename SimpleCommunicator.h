@@ -112,6 +112,8 @@ private:
 
 		Pid_t PitchPid;
 
+		Pid_t RollPid;
+
 		struct {
 			unsigned char M1Pos;
 			unsigned char M2Pos;
@@ -186,6 +188,9 @@ private:
 	float _yaw_force;
 	float _yaw;
 
+	float _roll_force;
+	float _roll;
+
 	enum MOVEMENT_CONTROL_TYPE {
 		MCT_DIRECT,
 		MCT_VECTOR,
@@ -194,7 +199,7 @@ private:
 	enum CONTROL_TYPE {
 		CT_DIRECT,
 		CT_AUTO
-	} _depth_control_type, _yaw_control_type, _pitch_control_type;
+	} _depth_control_type, _yaw_control_type, _pitch_control_type, _roll_control_type;
 
 	State_t _current_remote_state;
 	State_t _state;
@@ -235,7 +240,7 @@ private:
 	std::function<void(float)> _on_depth_receive;
 	std::function<void(RawSensorData_t)> _on_raw_sensor_data_receive;
 	std::function<void(CalibratedSensorData_t)> _on_calibrated_sensor_data_receive;
-	std::function<void(PidState_t, PidState_t, PidState_t)> _on_pid_state_receive;
+	std::function<void(PidState_t, PidState_t, PidState_t, PidState_t)> _on_pid_state_receive;
 	std::function<void(MotorsState_t)> _on_motors_state_receive;
 	std::function<void(std::string)> _on_stop;
 	std::function<void(unsigned long)> _on_msg_receive;
@@ -279,12 +284,15 @@ public:
 	void SetPitch(float pitch);
 	void SetYawForce(float yaw_force);
 	void SetYaw(float yaw);
+	void SetRoll(float roll);
+	void SetRollForce(float roll);
 	void ScanI2C();
 	void SetFlashlightState(bool state);
 	void SetReadBluetoothState(bool read);
 	void SetDepthPid(float p, float i, float d);
 	void SetPitcPid(float p, float i, float d);
 	void SetYawPid(float p, float i, float d);
+	void SetRollPid(float p, float i, float d);
 	void SetReceiveRawSensorData(bool receive);
 	void SetReceiveCalibratedSensorData(bool receive);
 	void SetReceivePidState(bool receive);
@@ -310,10 +318,9 @@ public:
 	void OnDepthReceive(std::function<void(float)> on_depth_receive);
 	void OnRawSensorDataReceive(std::function<void(RawSensorData_t)> on_raw_sensor_data_receive);
 	void OnCalibratedSensorDataReceive(std::function<void(CalibratedSensorData_t)> on_calibrated_sensor_data_receive);
-	void OnPidStateReceive(std::function<void(PidState_t, PidState_t, PidState_t)> on_pid_state_receive);
+	void OnPidStateReceive(std::function<void(PidState_t, PidState_t, PidState_t, PidState_t)> on_pid_state_receive);
 	void OnMotorsStateReceive(std::function<void(MotorsState_t)> on_motors_state_receive);
 	void OnStop(std::function<void(std::string)> on_stop);
 	void OnMessageReceive(std::function<void(unsigned long)> on_msg_receive);
 	void OnRemoteProcessorLoad(std::function<void(unsigned long)> on_remote_processor_load_receive);
-
 };

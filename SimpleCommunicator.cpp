@@ -281,6 +281,18 @@ void SimpleCommunicator_t::SetYaw(float yaw) {
 	_movement_control_type = MCT_VECTOR;
 }
 
+void SimpleCommunicator_t::SetRoll(float roll) {
+	_roll = roll;
+	_roll_control_type = CT_AUTO;
+	_movement_control_type = MCT_VECTOR;
+}
+
+void SimpleCommunicator_t::SetRollForce(float roll) {
+	_roll_force = roll;
+	_roll_control_type = CT_AUTO;
+	_movement_control_type = MCT_VECTOR;
+}
+
 void SimpleCommunicator_t::ScanI2C() {
 	_last_i2c_scan++;
 }
@@ -311,6 +323,13 @@ void SimpleCommunicator_t::SetYawPid(float p, float i, float d) {
 	_config.YawPid.P = p;
 	_config.YawPid.I = i;
 	_config.YawPid.D = d;
+	_UpdateConfigHash();
+}
+
+void SimpleCommunicator_t::SetRollPid(float p, float i, float d) {
+	_config.RollPid.P = p;
+	_config.RollPid.I = i;
+	_config.RollPid.D = d;
 	_UpdateConfigHash();
 }
 
@@ -553,8 +572,14 @@ void SimpleCommunicator_t::_Receiver() {
 						pitch_pid.Target = dr.GetFloat();
 						pitch_pid.Out = dr.GetFloat();
 
+						PidState_t roll_pid;
+
+						roll_pid.In = dr.GetFloat();
+						roll_pid.Target = dr.GetFloat();
+						roll_pid.Out = dr.GetFloat();
+
 						if (_on_pid_state_receive) {
-							_on_pid_state_receive(depth_pid, yaw_pid, pitch_pid);
+							_on_pid_state_receive(depth_pid, yaw_pid, pitch_pid, roll_pid);
 						}
 					}
 					break;
@@ -654,13 +679,13 @@ void SimpleCommunicator_t::_Sender() {
 			struct {
 				bool auto_yaw : 1;
 				bool auto_pitch : 1;
-				bool x_control : 1;
-				bool y_control : 1;
-				unsigned char z_control : 2;
+				bool auto_roll : 1;
+				bool _depth_control_type : 1;
 			} control_type;
 			control_type = {
 				_yaw_control_type == CT_AUTO,
 				_pitch_control_type == CT_AUTO,
+				_roll_control_type == CT_AUTO,
 				_depth_control_type == CT_AUTO,
 			};
 			_connection_provider
@@ -684,6 +709,12 @@ void SimpleCommunicator_t::_Sender() {
 				} else {
 					_connection_provider->WriteFloatAs<char>(_pitch_force, -2, 2);
 				}
+
+				if (_roll_control_type == CT_AUTO) {
+					_connection_provider->WriteFloatAs<char>(_roll, -M_PI, M_PI);
+				} else {
+					_connection_provider->WriteFloatAs<char>(_roll_force, -2, 2);
+				}
 			;
 			break;
 		default:;
@@ -705,6 +736,10 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_config.PitchPid.P)
 				->WriteFloat(_config.PitchPid.I)
 				->WriteFloat(_config.PitchPid.D)
+
+				->WriteFloat(_config.RollPid.P)
+				->WriteFloat(_config.RollPid.I)
+				->WriteFloat(_config.RollPid.D)
 
 				->WriteUInt8(_config.MPositions.M1Pos)
 				->WriteUInt8(_config.MPositions.M2Pos)
@@ -787,7 +822,7 @@ void SimpleCommunicator_t::OnCalibratedSensorDataReceive(std::function<void(Cali
 	_on_calibrated_sensor_data_receive = on_calibrated_sensor_data_receive;
 }
 
-void SimpleCommunicator_t::OnPidStateReceive(std::function<void(PidState_t, PidState_t, PidState_t)> on_pid_state_receive) {
+void SimpleCommunicator_t::OnPidStateReceive(std::function<void(PidState_t, PidState_t, PidState_t, PidState_t)> on_pid_state_receive) {
 	_on_pid_state_receive = on_pid_state_receive;
 }
 

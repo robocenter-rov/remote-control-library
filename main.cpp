@@ -49,14 +49,14 @@ int main() {
 		int n = 0;
 		communicator->OnRawSensorDataReceive([&](SimpleCommunicator_t::RawSensorData_t raw_sensor_data)
 		{
-			//printf("Raw sensor data: %d, %d, %d\r", raw_sensor_data.Gx, raw_sensor_data.Gy, raw_sensor_data.Gz);
-			gyro_x += raw_sensor_data.Gx;
+			printf("Raw sensor data: %d, %d, %d\r", raw_sensor_data.Gx, raw_sensor_data.Gy, raw_sensor_data.Gz);
+			/*gyro_x += raw_sensor_data.Gx;
 			gyro_y += raw_sensor_data.Gy;
 			gyro_z += raw_sensor_data.Gz;
 
 			n++;
 
-			printf("%f, %f, %f\r", gyro_x / n, gyro_y / n, gyro_z / n);
+			printf("%f, %f, %f\r", gyro_x / n, gyro_y / n, gyro_z / n);*/
 		});
 		int len = 0;
 		communicator->OnCalibratedSensorDataReceive([&](SimpleCommunicator_t::CalibratedSensorData_t calibrated_sensor_data)
@@ -90,7 +90,7 @@ int main() {
 		{
 			printf("Bluetooth message: %s\n", msg.c_str());
 		});
-		communicator->OnPidStateReceive([](SimpleCommunicator_t::PidState_t depth, SimpleCommunicator_t::PidState_t yaw, SimpleCommunicator_t::PidState_t pitch)
+		communicator->OnPidStateReceive([](SimpleCommunicator_t::PidState_t depth, SimpleCommunicator_t::PidState_t yaw, SimpleCommunicator_t::PidState_t roll, SimpleCommunicator_t::PidState_t pitch)
 		{
 			printf("Yaw pid state: input: %f, target: %f, output: %f\r", yaw.In, yaw.Target, yaw.Out);
 		});
@@ -107,7 +107,7 @@ int main() {
 
 		communicator->OnRemoteProcessorLoad([](unsigned long loop_frequency) 
 		{
-			printf("Loop frequency: %ld          \r", loop_frequency);
+			//printf("Loop frequency: %ld          \r", loop_frequency);
 		});
 		char c;
 		bool flashlight_state = false;
