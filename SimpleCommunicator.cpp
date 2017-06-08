@@ -289,7 +289,7 @@ void SimpleCommunicator_t::SetRoll(float roll) {
 
 void SimpleCommunicator_t::SetRollForce(float roll) {
 	_roll_force = roll;
-	_roll_control_type = CT_AUTO;
+	_roll_control_type = CT_DIRECT;
 	_movement_control_type = MCT_VECTOR;
 }
 
@@ -707,13 +707,13 @@ void SimpleCommunicator_t::_Sender() {
 				if (_pitch_control_type == CT_AUTO) {
 					_connection_provider->WriteFloatAs<char>(_pitch, -M_PI, M_PI);
 				} else {
-					_connection_provider->WriteFloatAs<char>(_pitch_force, -2, 2);
+					_connection_provider->WriteFloatAs<char>(_pitch_force, -4, 4);
 				}
 
 				if (_roll_control_type == CT_AUTO) {
 					_connection_provider->WriteFloatAs<char>(_roll, -M_PI, M_PI);
 				} else {
-					_connection_provider->WriteFloatAs<char>(_roll_force, -2, 2);
+					_connection_provider->WriteFloatAs<char>(_roll_force, -4, 4);
 				}
 			;
 			break;
