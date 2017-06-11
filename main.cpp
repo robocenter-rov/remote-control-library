@@ -122,8 +122,14 @@ int main() {
 
 		float x = 0, y = 0;
 
-		communicator->SetPitcPid(0.5, 0, 0);
-		communicator->SetSendMessageFrequency(50);
+		communicator->SetPitcPid(0, 0, 0);
+		communicator->SetYawPid(0, 0, 0);
+		communicator->SetRollPid(0, 0, 0);
+		communicator->SetDepthPid(0, 0, 0);
+		communicator->SetSendMessageFrequency(500);
+		communicator->SetAccelConfig(2.01769, -2.51933, -5.07049, 257.626, 267.65, 247.943);
+		communicator->SetGyroConfig(23, 23, 23, 1000);
+		communicator->SetMotorsMultiplier(1, 1, 1, 1, 1, -1, 1, 1);
 
 		communicator->Begin();
 		while (std::cin >> c) {
@@ -149,7 +155,7 @@ int main() {
 					y = v;
 				}
 				else if (d == 'z') {
-					communicator->SetSinkingForce(v);
+					communicator->SetLocalZForce(v);
 				}
 
 				communicator->SetMovementForce(x, y);
@@ -179,6 +185,9 @@ int main() {
 				}
 				else if (r == 'p') {
 					communicator->SetPitchForce(v);
+				}
+				else if (r == 'r') {
+					communicator->SetRollForce(v);
 				}
 			} break;
 			/*case 'g': {
