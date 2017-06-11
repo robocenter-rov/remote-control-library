@@ -75,7 +75,7 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	memset(&_config.DepthPid, 0, sizeof _config.DepthPid);
 	memset(&_config.YawPid, 0, sizeof _config.YawPid);
 	memset(&_config.PitchPid, 0, sizeof _config.PitchPid);
-
+    memset(&_state, 0, sizeof _state);
 	_UpdateConfigHash();
 
 	_receive_time_out = std::chrono::milliseconds(1000);
