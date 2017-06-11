@@ -223,26 +223,32 @@ void SimpleCommunicator_t::SetMovementForce(float x, float y) {
 
 void SimpleCommunicator_t::SetLocalXForce(float x) {
 	_movement_force.local_x_force = x;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetLocalYForce(float y) {
 	_movement_force.local_y_force = y;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetLocalZForce(float z) {
 	_movement_force.local_z_force = z;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetGlobalXForce(float x) {
 	_movement_force.global_x_force = x;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetGlobalYForce(float y) {
 	_movement_force.global_y_force = y;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetGlobalZForce(float z) {
 	_movement_force.global_z_force = z;
+	_movement_control_type = MCT_VECTOR;
 }
 
 void SimpleCommunicator_t::SetSinkingForce(float z) {
@@ -413,8 +419,12 @@ float SimpleCommunicator_t::GetAutoDepthValue() {
     return _depth;
 }
 
-flost SimpleCommunicator_t::GetAutoYawValue() {
-    return _yaw;
+float SimpleCommunicator_t::GetAutoYawValue() {
+	return _yaw;
+}
+
+void SimpleCommunicator_t::DisableAutoDepth() {
+	_depth_control_type = CT_DIRECT;
 }
 
 void SimpleCommunicator_t::OnConnectionStateChange(std::function<void (bool)> on_connection_state_change) {
