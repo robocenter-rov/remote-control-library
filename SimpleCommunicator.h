@@ -307,6 +307,8 @@ public:
 	void SetCam2MaxVal(float val);
 	void SetGyroConfig(float x_bias, float y_bias, float z_bias, float scale);
 	void SetAccelConfig(float x_bias, float y_bias, float z_bias, float x_scale, float y_scale, float z_scale);
+    float GetAutoDepthValue();
+    float GetAutoYawValue();
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);

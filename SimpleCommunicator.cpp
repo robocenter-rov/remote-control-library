@@ -345,6 +345,7 @@ void SimpleCommunicator_t::SetReceivePidState(bool receive) {
 	_state.SendPidState = receive;
 }
 
+
 void SimpleCommunicator_t::SetReceiveMotorsState(bool receive) {
 	_state.SendMotorsState = receive;
 }
@@ -408,6 +409,13 @@ void SimpleCommunicator_t::SetAccelConfig(float x_bias, float y_bias, float z_bi
 	_UpdateConfigHash();
 }
 
+float SimpleCommunicator_t::GetAutoDepthValue() {
+    return _depth;
+}
+
+flost SimpleCommunicator_t::GetAutoYawValue() {
+    return _yaw;
+}
 
 void SimpleCommunicator_t::OnConnectionStateChange(std::function<void (bool)> on_connection_state_change) {
 	_on_connection_state_change = on_connection_state_change;
