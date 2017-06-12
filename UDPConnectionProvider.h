@@ -7,16 +7,14 @@
 #include <QByteArray>
 #include <QObject>
 
-class UDPConnectionProvider_t : public ConnectionProvider_t, public QObject
+class UDPConnectionProvider_t : public ConnectionProvider_t
 {
-    Q_OBJECT
 private:
     QHostAddress _address;
     uint16_t _port;
     QUdpSocket* _udp_socket;
     QByteArray _send_buffer;
-private slots:
-    void readPendingDatagrams();
+    int _received;
 public:
     explicit UDPConnectionProvider_t(const QHostAddress &address, uint16_t port, size_t receive_buffer_size);
     ~UDPConnectionProvider_t() override;

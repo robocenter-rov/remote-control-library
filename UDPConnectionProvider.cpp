@@ -6,7 +6,20 @@ UDPConnectionProvider_t::UDPConnectionProvider_t(const QHostAddress &address, ui
     _port(port),
     _udp_socket(new QUdpSocket())
 {
-    connect(_udp_socket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
+    _received = 0;
+    QObject::connect(
+        _udp_socket,
+        &QUdpSocket::readyRead,
+        [&]() {
+            _received = _udp_socket->pendingDatagramSize();
+            QHostAddress *address = new QHostAddress();
+            _udp_socket->readDatagram((char*)_receive_buffer, _receive_buffer_size, address);
+            if (_received > _receive_buffer_size) {
+                _received = 0;
+                return;
+            }
+        }
+    );
 }
 
 UDPConnectionProvider_t::~UDPConnectionProvider_t() {
@@ -23,15 +36,17 @@ void UDPConnectionProvider_t::Stop() {
 }
 
 ConnectionProvider_t* UDPConnectionProvider_t::Write(const void *buffer, size_t size) {
-    _send_buffer = QByteArray((char *)buffer, size);
+    _send_buffer.append((char *)buffer, size);
     return this;
 }
 
-ConnectionProvider_t* UDPConnectionProvider_t::WriteUInt8(uint8_t) {
+ConnectionProvider_t* UDPConnectionProvider_t::WriteUInt8(uint8_t c) {
+    _send_buffer.append(c);
     return this;
 }
 
 ConnectionProvider_t* UDPConnectionProvider_t::BeginPacket() {
+    _received = 0;
     _send_buffer.clear();
     return this;
 }
@@ -42,21 +57,9 @@ ConnectionProvider_t* UDPConnectionProvider_t::EndPacket() {
 }
 
 int UDPConnectionProvider_t::Receive() {
-    return _receive_buffer_size;
+    return _received;
 }
 
 bool UDPConnectionProvider_t::Connected() {
     return _udp_socket->state() == QAbstractSocket::ConnectedState;
-}
-
-void UDPConnectionProvider_t::readPendingDatagrams() {
-    QByteArray receivedData;
-    receivedData.resize(_udp_socket->pendingDatagramSize());
-    QHostAddress *address = new QHostAddress();
-    _udp_socket->readDatagram(receivedData.data(), receivedData.size(), address);
-
-    _receive_buffer_size = receivedData.size();
-    for (int i = 0; i < receivedData.size(); i++) {
-        _receive_buffer[i] = static_cast<uint8_t>(receivedData[i]);
-    }
 }
