@@ -1,21 +1,34 @@
 #include "UDPConnectionProvider.h"
 
+WriteInvoker_t::WriteInvoker_t(QHostAddress address, uint16_t port, QUdpSocket *udp_socket) {
+    _address = address;
+    _port = port;
+    _udp_socket = udp_socket;
+    connect(this, SIGNAL(Send(uint8_t*,int)), this, SLOT(Sender(uint8_t*,int)));
+}
+
+WriteInvoker_t::~WriteInvoker_t() {
+    delete _udp_socket;
+}
+
+void WriteInvoker_t::Sender(uint8_t *buffer, int size) {
+    _udp_socket->writeDatagram((char*)buffer, size, _address, _port);
+}
+
 UDPConnectionProvider_t::UDPConnectionProvider_t(const QHostAddress &address, uint16_t port, size_t receive_buffer_size, size_t send_buffer_size)
     : ConnectionProvider_t(receive_buffer_size),
-    _address(address),
-    _port(port),
-    _udp_socket(new QUdpSocket()),
+    _write_invoker(address, port, new QUdpSocket()),
     _send_buffer(new uint8_t[send_buffer_size]),
     _send_buffer_size(send_buffer_size)
 {
     _received = 0;
     QObject::connect(
-        _udp_socket,
+        _write_invoker._udp_socket,
         &QUdpSocket::readyRead,
         [&]() {
-            _received = _udp_socket->pendingDatagramSize();
+            _received = _write_invoker._udp_socket->pendingDatagramSize();
             QHostAddress *address = new QHostAddress();
-            _udp_socket->readDatagram((char*)_receive_buffer, _receive_buffer_size, address);
+            _write_invoker._udp_socket->readDatagram((char*)_receive_buffer, _receive_buffer_size, address);
             if (_received > _receive_buffer_size) {
                 _received = 0;
                 return;
@@ -26,16 +39,15 @@ UDPConnectionProvider_t::UDPConnectionProvider_t(const QHostAddress &address, ui
 
 UDPConnectionProvider_t::~UDPConnectionProvider_t() {
     Stop();
-    delete _udp_socket;
     delete[] _send_buffer;
 }
 
 void UDPConnectionProvider_t::Begin() {
-     _udp_socket->bind(_address, _port);
+     _write_invoker._udp_socket->bind(_write_invoker._address, _write_invoker._port);
 }
 
 void UDPConnectionProvider_t::Stop() {
-    _udp_socket->close();
+    _write_invoker._udp_socket->close();
 }
 
 ConnectionProvider_t* UDPConnectionProvider_t::Write(const void *buffer, size_t size) {
@@ -62,7 +74,8 @@ ConnectionProvider_t* UDPConnectionProvider_t::BeginPacket() {
 }
 
 ConnectionProvider_t* UDPConnectionProvider_t::EndPacket() {
-    _udp_socket->writeDatagram((char*)_send_buffer, _send_head, _address, _port);
+    _write_invoker.Send(_send_buffer, _send_head);
+    _send_head = 0;
     return this;
 }
 
@@ -73,5 +86,5 @@ int UDPConnectionProvider_t::Receive() {
 }
 
 bool UDPConnectionProvider_t::Connected() {
-    return _udp_socket->state() == QAbstractSocket::ConnectedState;
+    return _write_invoker._udp_socket->state() == QAbstractSocket::ConnectedState;
 }
