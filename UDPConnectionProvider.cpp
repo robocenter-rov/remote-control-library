@@ -56,15 +56,16 @@ ConnectionProvider_t* UDPConnectionProvider_t::Write(const void *buffer, size_t 
         throw SendBufferLimitExceeded_t();
     }
     memcpy(_send_buffer + _send_head, buffer, size);
+    _send_head += size;
     return this;
 }
 
 ConnectionProvider_t* UDPConnectionProvider_t::WriteUInt8(uint8_t c) {
-    if (++_send_head > _send_buffer_size) {
+    if (_send_head >= _send_buffer_size) {
         _send_head = 0;
         throw SendBufferLimitExceeded_t();
     }
-    _send_buffer[_send_head] = c;
+    _send_buffer[_send_head++] = c;
     return this;
 }
 
