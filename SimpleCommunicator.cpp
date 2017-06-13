@@ -76,6 +76,8 @@ SimpleCommunicator_t::SimpleCommunicator_t(ConnectionProvider_t* connection_prov
 	memset(&_config.YawPid, 0, sizeof _config.YawPid);
 	memset(&_config.PitchPid, 0, sizeof _config.PitchPid);
     memset(&_state, 0, sizeof _state);
+
+	_config.StabilizationUpdateFrequency = 100;
 	_UpdateConfigHash();
 
 	_receive_time_out = std::chrono::milliseconds(1000);
@@ -412,6 +414,11 @@ void SimpleCommunicator_t::SetAccelConfig(float x_bias, float y_bias, float z_bi
 	_config.IMUConfig.AccXscale = x_scale;
 	_config.IMUConfig.AccYscale = y_scale;
 	_config.IMUConfig.AccZscale= z_scale;
+	_UpdateConfigHash();
+}
+
+void SimpleCommunicator_t::SetStabilizationUpdateFrequency(unsigned int stabilization_update_frequency) {
+	_config.StabilizationUpdateFrequency = stabilization_update_frequency;
 	_UpdateConfigHash();
 }
 
@@ -795,6 +802,8 @@ void SimpleCommunicator_t::_Sender() {
 				->WriteFloat(_config.IMUConfig.GyroZbias)
 
 				->WriteFloat(_config.IMUConfig.GyroScale)
+
+				->WriteInt16(_config.StabilizationUpdateFrequency)
 			;
 		}
 		_connection_provider->EndPacket();

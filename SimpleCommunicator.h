@@ -158,6 +158,8 @@ private:
 
 			float GyroScale;
 		} IMUConfig;
+
+		uint16_t StabilizationUpdateFrequency;
 	} _config;
 #pragma pack(pop)
 
@@ -310,6 +312,7 @@ public:
     float GetAutoDepthValue();
     float GetAutoYawValue();
 	void DisableAutoDepth();
+	void SetStabilizationUpdateFrequency(unsigned int stabilization_update_frequency);
 
 	void OnConnectionStateChange(std::function<void(bool)> on_connection_state_change);
 	void OnPacketsLeak(std::function<void(int, int)> on_packets_leak);
