@@ -122,7 +122,7 @@ int main() {
 
 		float x = 0, y = 0;
 
-		communicator->SetPitcPid(0, 0, 0);
+		communicator->SetPitchPid(0, 0, 0);
 		communicator->SetYawPid(0, 0, 0);
 		communicator->SetRollPid(0, 0, 0);
 		communicator->SetDepthPid(0, 0, 0);

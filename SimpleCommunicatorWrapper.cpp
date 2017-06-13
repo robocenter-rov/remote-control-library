@@ -128,7 +128,7 @@ void SimpleCommunicatorWrapper_t::SetDepthPid(float p, float i, float d) const {
 }
 
 void SimpleCommunicatorWrapper_t::SetPitcPid(float p, float i, float d) const {
-	_simple_communicator->SetPitcPid(p, i, d);
+	_simple_communicator->SetPitchPid(p, i, d);
 }
 
 void SimpleCommunicatorWrapper_t::SetYawPid(float p, float i, float d) const {

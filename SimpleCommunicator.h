@@ -292,7 +292,7 @@ public:
 	void SetFlashlightState(bool state);
 	void SetReadBluetoothState(bool read);
 	void SetDepthPid(float p, float i, float d);
-	void SetPitcPid(float p, float i, float d);
+	void SetPitchPid(float p, float i, float d);
 	void SetYawPid(float p, float i, float d);
 	void SetRollPid(float p, float i, float d);
 	void SetReceiveRawSensorData(bool receive);

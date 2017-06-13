@@ -320,7 +320,7 @@ void SimpleCommunicator_t::SetDepthPid(float p, float i, float d) {
 	_UpdateConfigHash();
 }
 
-void SimpleCommunicator_t::SetPitcPid(float p, float i, float d) {
+void SimpleCommunicator_t::SetPitchPid(float p, float i, float d) {
 	_config.PitchPid.P = p;
 	_config.PitchPid.I = i;
 	_config.PitchPid.D = d;
